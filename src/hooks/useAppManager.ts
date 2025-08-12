@@ -14,7 +14,7 @@ export const useAppManager = () => {
       component: app.component,
       position: {
         x: 350 + (windows.length * 30), // Start after sidebar (64px) + IndexPanel (256px) + padding (30px)
-        y: 100 + (windows.length * 30), // Start below TopBar (48px) + padding
+        y: 80 + (windows.length * 30), // Start below TopBar (40px) + padding
       },
       zIndex: nextZIndex,
       props,

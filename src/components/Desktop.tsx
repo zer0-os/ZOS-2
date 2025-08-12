@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { IndexPanel } from './IndexPanel';
+import { useBackgroundClass } from '@/hooks/useBackgroundClass';
 
 interface DesktopProps {
   children?: React.ReactNode;
@@ -17,6 +18,7 @@ export const Desktop: React.FC<DesktopProps> = ({
   onOpenApp
 }) => {
   const [selectedApp, setSelectedApp] = useState<string | null>('chat');
+  const backgroundClass = useBackgroundClass();
 
   const handleSidebarClick = (appId: string) => {
     setSelectedApp(appId);
@@ -46,7 +48,7 @@ export const Desktop: React.FC<DesktopProps> = ({
   };
 
   return (
-    <Card className={`min-h-screen relative overflow-hidden border-0 rounded-none ${className}`} style={{ backgroundColor: '#121212' }}>
+    <Card className={`min-h-screen relative overflow-hidden border-0 rounded-none ${backgroundClass} ${className}`}>
       {/* Sidebar */}
       <Sidebar onOpenApp={handleSidebarClick} />
 

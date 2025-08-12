@@ -254,17 +254,17 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
 
   return (
     <Card 
-      className={`fixed left-16 top-12 w-64 h-[calc(100vh-3rem)] flex flex-col bg-transparent border-0 shadow-none rounded-none ${className}`}
+      className={`fixed left-16 top-10 w-64 h-[calc(100vh-2.5rem)] flex flex-col bg-transparent border-0 shadow-none rounded-none ${className}`}
     >
       {/* Search Input */}
-      <div className="px-2 pt-12 pb-0">
+      <div className="px-4 pt-12 pb-0">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-8 bg-slate-800/50 border-slate-600 text-slate-200 text-sm placeholder:text-slate-400 focus:border-slate-500"
+            className="pl-10 h-8 bg-muted/50 border-border text-foreground text-sm placeholder:text-muted-foreground focus:border-ring"
           />
         </div>
       </div>
@@ -274,12 +274,12 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
           content.tabs ? (
             // Render tabbed content
             <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-              <TabsList className="flex w-auto mx-2 mt-4 mb-2 bg-slate-800/50 h-8 gap-1 justify-start">
+              <TabsList className="flex w-auto mx-4 mt-4 mb-2 bg-muted/50 h-8 gap-1 justify-start">
                 {content.tabs.map((tab) => (
                   <TabsTrigger 
                     key={tab.id} 
                     value={tab.id}
-                    className="text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white text-xs font-normal px-2.5 py-1 h-6 min-w-0"
+                    className="text-xs font-normal px-2.5 py-1 h-6 min-w-0"
                   >
                     {tab.label}
                   </TabsTrigger>
@@ -287,7 +287,7 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
               </TabsList>
               
               {content.tabs.map((tab) => (
-                <TabsContent key={tab.id} value={tab.id} className="flex-1 px-2 pt-0">
+                <TabsContent key={tab.id} value={tab.id} className="flex-1 px-4 pt-0">
                   <Accordion 
                     type="multiple" 
                     value={openSections}
@@ -298,9 +298,9 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                       <AccordionItem 
                         key={section.id} 
                         value={section.id}
-                        className="border border-slate-700/30 rounded-lg bg-slate-800/20"
+                        className="border border-border rounded-lg bg-card/20"
                       >
-                        <AccordionTrigger className="px-4 py-3 text-slate-300 hover:text-white hover:no-underline">
+                        <AccordionTrigger className="px-4 py-3 text-muted-foreground hover:text-foreground hover:no-underline">
                           {section.title}
                         </AccordionTrigger>
                         <AccordionContent className="px-4 pb-3">
@@ -308,7 +308,7 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                             {section.items.map((item, index) => (
                               <div 
                                 key={index}
-                                className="p-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-700/30 rounded cursor-pointer transition-colors"
+                                className="p-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
                                 onClick={() => onItemClick?.(selectedApp!, item)}
                               >
                                 {item}
@@ -324,7 +324,7 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
             </Tabs>
           ) : (
             // Render direct sections (no tabs)
-            <div className="px-2 pt-0">
+            <div className="px-4 pt-0">
               <Accordion 
                 type="multiple" 
                 value={openSections}
@@ -335,9 +335,9 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                   <AccordionItem 
                     key={section.id} 
                     value={section.id}
-                    className="border border-slate-700/30 rounded-lg bg-slate-800/20"
+                    className="border border-border rounded-lg bg-card/20"
                   >
-                    <AccordionTrigger className="px-4 py-3 text-slate-300 hover:text-white hover:no-underline">
+                    <AccordionTrigger className="px-4 py-3 text-muted-foreground hover:text-foreground hover:no-underline">
                       {section.title}
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-3">
@@ -345,7 +345,7 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                         {section.items.map((item, index) => (
                           <div 
                             key={index}
-                            className="p-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-700/30 rounded cursor-pointer transition-colors"
+                            className="p-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
                             onClick={() => onItemClick?.(selectedApp!, item)}
                           >
                             {item}
@@ -360,7 +360,7 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
           )
         ) : (
           <div className="flex items-center justify-center h-full">
-            <p className="text-slate-500 text-center">
+            <p className="text-muted-foreground text-center">
               Click an app in the sidebar to view its contents
             </p>
           </div>
