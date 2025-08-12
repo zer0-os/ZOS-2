@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFastDraggable } from '@/hooks/useFastDraggable';
+import { useThemeContext } from '@/contexts/ThemeProvider';
 import { X, Minus, Square } from 'lucide-react';
 import type { AppWindow as AppWindowType } from '@/types/app';
 
@@ -36,6 +37,9 @@ interface AppWindowProps {
 type CombinedWindowProps = WindowProps | AppWindowProps;
 
 export const Window: React.FC<CombinedWindowProps> = (props) => {
+  // Access theme context for theme-aware styling
+  const { theme } = useThemeContext();
+  
   // Determine if this is an app window or simple window
   const isAppWindow = 'window' in props && props.window !== undefined;
   
@@ -127,11 +131,6 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
   // Memoize style calculations for performance
   const windowStyle = useMemo(() => {
     const baseStyle = {
-      borderColor: '#2E3135',
-      backgroundColor: 'rgba(18, 18, 18, 0.7)',
-      borderRadius: '6px',
-      borderWidth: '1px',
-      backdropFilter: 'blur(8px)',
       zIndex: zIndex,
     };
 
@@ -187,14 +186,16 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
   return (
     <Card
       ref={dragRef}
-      className={`fixed shadow-2xl border ${
-        isMaximized ? 'max-w-none min-w-0 w-full h-full' : 'min-w-80'
+      className={`fixed shadow-2xl border border-border bg-card/70 backdrop-blur-sm rounded-md ${
+        isMaximized ? 'max-w-none min-w-0 w-full h-full rounded-none' : 'min-w-80'
       } ${
-        isDragging ? 'shadow-sm ring-1 ring-white/30' : ''
+        isDragging ? 'shadow-sm ring-1 ring-primary/30' : ''
       } ${
         isAppWindow && !isMaximized ? 'max-w-4xl' : ''
       } ${
         !isAppWindow && !isMaximized ? 'max-w-96' : ''
+      } ${
+        isSnapped ? 'rounded-none' : ''
       } ${className}`}
       style={windowStyle}
       onMouseDown={onFocus}
@@ -202,16 +203,9 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
 
     >
       <CardHeader
-        className={`pb-1 pt-1 px-3 select-none text-white ${
-          (isMaximized || isSnapped) ? 'cursor-default' : 'cursor-move'
+        className={`pb-1 pt-1 px-3 select-none text-card-foreground bg-card/70 border-b border-border backdrop-blur-sm ${
+          (isMaximized || isSnapped) ? 'cursor-default rounded-t-none' : 'cursor-move rounded-t-md'
         }`}
-        style={{ 
-          backgroundColor: 'rgba(18, 18, 18, 0.7)', 
-          borderBottom: '1px solid #2E3135',
-          borderTopLeftRadius: (isMaximized || isSnapped) ? '0px' : '6px',
-          borderTopRightRadius: (isMaximized || isSnapped) ? '0px' : '6px',
-          backdropFilter: 'blur(4px)'
-        }}
         onMouseDown={(isMaximized || isSnapped) ? undefined : (e) => {
           // Call focus first, then handle drag
           onFocus?.();
@@ -219,8 +213,7 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
         }}
       >
         <CardTitle className="text-sm font-medium flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+          <span className="flex items-center">
             {title}
           </span>
           <span className="flex items-center gap-1">
@@ -228,7 +221,7 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 hover:bg-slate-600 text-slate-300 hover:text-white"
+                className="h-6 w-6 p-0 hover:bg-muted text-muted-foreground hover:text-card-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
                   onMinimize();
@@ -241,7 +234,7 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 hover:bg-slate-600 text-slate-300 hover:text-white"
+                className="h-6 w-6 p-0 hover:bg-muted text-muted-foreground hover:text-card-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
                   onMaximize();
@@ -254,7 +247,7 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 hover:bg-red-500 text-slate-300 hover:text-white"
+                className="h-6 w-6 p-0 hover:bg-destructive text-muted-foreground hover:text-destructive-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
                   onClose();
@@ -267,13 +260,9 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
         </CardTitle>
       </CardHeader>
       <CardContent 
-        className="overflow-hidden p-0" 
-        style={{ 
-          backgroundColor: 'rgba(18, 18, 18, 0.7)',
-          borderBottomLeftRadius: (isMaximized || isSnapped) ? '0px' : '6px',
-          borderBottomRightRadius: (isMaximized || isSnapped) ? '0px' : '6px',
-          backdropFilter: 'blur(4px)'
-        }}
+        className={`overflow-hidden p-0 bg-card/70 backdrop-blur-sm ${
+          (isMaximized || isSnapped) ? 'rounded-b-none' : 'rounded-b-md'
+        }`}
       >
         {children}
       </CardContent>

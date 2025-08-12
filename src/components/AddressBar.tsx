@@ -42,7 +42,7 @@ export const AddressBar: React.FC<AddressBarProps> = ({
         size="sm"
         onClick={handleBack}
         disabled={!canGoBack}
-        className="h-6 w-6 p-0 text-muted-foreground disabled:opacity-30"
+        className="p-0 text-muted-foreground disabled:opacity-30"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -52,7 +52,7 @@ export const AddressBar: React.FC<AddressBarProps> = ({
         size="sm"
         onClick={handleForward}
         disabled={!canGoForward}
-        className="h-6 w-6 p-0 text-muted-foreground disabled:opacity-30"
+        className="p-0 text-muted-foreground disabled:opacity-30"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
@@ -65,7 +65,7 @@ export const AddressBar: React.FC<AddressBarProps> = ({
             placeholder="Search or enter address..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-4 pr-8 h-6 text-foreground text-center bg-muted/50 border-transparent focus:border-ring rounded-2xl text-xs placeholder:text-muted-foreground transition-colors"
+            className="pl-4 pr-8 text-foreground text-center bg-muted/50 border-transparent focus:border-ring rounded-2xl text-xs placeholder:text-muted-foreground transition-colors"
             onFocus={(e) => {
               // Select all text when focused (like browser address bars)
               e.target.select();

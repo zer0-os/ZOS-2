@@ -78,19 +78,19 @@ export const ChatApp: React.FC<ChatAppProps> = ({
   };
 
   return (
-    <div className="h-full min-h-[500px] flex flex-col bg-slate-900/50">
+    <div className="h-full min-h-[500px] flex flex-col bg-transparent">
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-2">
-          <span className="text-slate-400 text-lg">{getChatIcon()}</span>
-          <h2 className="text-lg font-semibold text-slate-100">
+          <span className="text-muted-foreground text-lg">{getChatIcon()}</span>
+          <h2 className="text-lg font-semibold text-foreground">
             {chatName}
           </h2>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-muted-foreground">
             {chatType === 'channel' ? 'Channel' : chatType === 'direct' ? 'Direct Message' : 'Chat'}
           </span>
         </div>
-        <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
           <MoreVertical className="h-4 w-4" />
         </Button>
       </div>
@@ -106,18 +106,18 @@ export const ChatApp: React.FC<ChatAppProps> = ({
               <div
                 className={`max-w-[70%] ${
                   message.isOwnMessage
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-700 text-slate-100'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-foreground'
                 } rounded-lg p-3`}
               >
                 {!message.isOwnMessage && (
-                  <div className="text-xs text-slate-300 mb-1 font-medium">
+                  <div className="text-xs text-muted-foreground mb-1 font-medium">
                     {message.sender}
                   </div>
                 )}
                 <div className="text-sm">{message.content}</div>
                 <div className={`text-xs mt-1 ${
-                  message.isOwnMessage ? 'text-blue-200' : 'text-slate-400'
+                  message.isOwnMessage ? 'text-primary-foreground/70' : 'text-muted-foreground'
                 }`}>
                   {formatTime(message.timestamp)}
                 </div>
@@ -128,19 +128,19 @@ export const ChatApp: React.FC<ChatAppProps> = ({
       </ScrollArea>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-slate-700/50">
+      <div className="p-4 border-t border-border">
         <form onSubmit={handleSendMessage} className="flex space-x-2">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder={`Message ${chatName}...`}
-            className="flex-1 bg-slate-800 border-slate-600 text-slate-100 placeholder:text-slate-400 focus:border-slate-500"
+            className="flex-1 bg-background border-input text-foreground placeholder:text-muted-foreground focus:border-ring"
           />
           <Button 
             type="submit" 
             size="sm"
             disabled={!newMessage.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Send className="h-4 w-4" />
           </Button>
