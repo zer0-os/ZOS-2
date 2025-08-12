@@ -45,19 +45,19 @@ export function ThemeToggle() {
 
   const getThemeIcon = (themeName: string) => {
     switch (themeName) {
-      case 'light': return <Sun className="h-4 w-4" />
-      case 'midnight': return <Moon className="h-4 w-4" />
-      case 'blackout': return <Circle className="h-4 w-4 fill-current" />
-      default: return <Sun className="h-4 w-4" />
+      case 'light': return <Sun className="!h-5 !w-5" strokeWidth={1} />
+      case 'midnight': return <Moon className="!h-5 !w-5" strokeWidth={1} />
+      case 'blackout': return <Circle className="!h-5 !w-5 fill-current" strokeWidth={1} />
+      default: return <Sun className="!h-5 !w-5" strokeWidth={1} />
     }
   }
 
   return (
     <Button
-      variant="outline"
-      size="sm"
+      variant="ghost"
+      size="icon"
       onClick={cycleTheme}
-      className="p-2"
+      className="h-10 w-10"
       title={`Current: ${THEMES[theme].name} - Click to cycle`}
     >
       {getThemeIcon(theme)}

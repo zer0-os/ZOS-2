@@ -10,6 +10,7 @@ interface SidebarItemProps {
   isExpanded: boolean
   wrapper?: React.ComponentType<{ children: React.ReactNode }>
   customContent?: React.ReactNode
+  className?: string
 }
 
 export function SidebarItem({ 
@@ -19,7 +20,8 @@ export function SidebarItem({
   onMouseEnter, 
   isExpanded,
   wrapper: Wrapper,
-  customContent
+  customContent,
+  className = ''
 }: SidebarItemProps) {
   const content = customContent || (Icon && (
     <Button
@@ -29,12 +31,12 @@ export function SidebarItem({
       onClick={onClick}
       onMouseEnter={onMouseEnter}
     >
-      <Icon className="h-6 w-6" strokeWidth={1} />
+      <Icon className="!h-5 !w-5" strokeWidth={1.5} />
     </Button>
   ))
 
   return (
-    <div className="relative group h-10" onMouseEnter={onMouseEnter}>
+    <div className={`relative group h-10 ${className}`} onMouseEnter={onMouseEnter}>
       {Wrapper ? <Wrapper>{content}</Wrapper> : content}
       <div
         className={`absolute left-16 top-0 h-10 flex items-center pointer-events-none transition-all duration-300 ${

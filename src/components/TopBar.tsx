@@ -16,7 +16,7 @@ export const TopBar: React.FC<TopBarProps> = ({ className = '' }) => {
         <img 
           src={zeroLogo} 
           alt="ZERO Logo" 
-          className="h-6 w-auto"
+          className="h-8 w-auto"
         />
       </div>
       <div className="flex-1 max-w-2xl mx-auto">

@@ -49,7 +49,7 @@ export const THEMES: Record<Theme, { name: string; description: string }> = {
  * Available theme variants with their display names and descriptions
  */
 export const THEME_VARIANTS: Record<ThemeVariant, { name: string; description: string; color: string }> = {
-  default: { name: 'Green', description: 'Default green theme', color: '142 76% 36%' },
+  default: { name: 'Green', description: 'Default green theme', color: '174 99% 48%' },
   blue: { name: 'Blue', description: 'Classic blue theme', color: '221.2 83.2% 53.3%' },
   purple: { name: 'Purple', description: 'Rich purple theme', color: '262.1 83.3% 57.8%' },
   orange: { name: 'Orange', description: 'Vibrant orange theme', color: '24.6 95% 53.1%' },

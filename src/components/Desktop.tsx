@@ -50,7 +50,7 @@ export const Desktop: React.FC<DesktopProps> = ({
   return (
     <Card className={`min-h-screen relative overflow-hidden border-0 rounded-none ${backgroundClass} ${className}`}>
       {/* Sidebar */}
-      <Sidebar onOpenApp={handleSidebarClick} />
+      <Sidebar onOpenApp={handleSidebarClick} selectedApp={selectedApp} />
 
       {/* Index Panel */}
       <IndexPanel selectedApp={selectedApp} onItemClick={handleItemClick} />

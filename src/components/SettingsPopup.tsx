@@ -26,12 +26,12 @@ export function SettingsPopup({ children }: SettingsPopupProps) {
       <PopoverTrigger asChild>
         {children}
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="start" side="right" sideOffset={8}>
+      <PopoverContent className="w-80 bg-card border-border shadow-lg" align="start" side="right" sideOffset={8}>
         <div className="space-y-4">
           {/* Header */}
           <div className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold">Settings</h3>
+            <Settings className="h-5 w-5 text-accent-foreground" />
+            <h3 className="font-semibold text-card-foreground">Settings</h3>
           </div>
 
           <Separator />
@@ -39,13 +39,13 @@ export function SettingsPopup({ children }: SettingsPopupProps) {
           {/* Theme Section */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4" />
-              <span className="text-sm font-medium">Theme</span>
+              <Palette className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-card-foreground">Theme</span>
             </div>
             
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="text-sm">{THEMES[theme].name}</p>
+                <p className="text-sm text-card-foreground">{THEMES[theme].name}</p>
                 <p className="text-xs text-muted-foreground">
                   {THEMES[theme].description}
                 </p>
@@ -59,18 +59,18 @@ export function SettingsPopup({ children }: SettingsPopupProps) {
           {/* Theme Colors Section */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4" />
-              <span className="text-sm font-medium">Theme Colors</span>
+              <Palette className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-card-foreground">Theme Colors</span>
             </div>
 
             {/* Current Theme Display */}
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/10 border border-border/50">
               <div 
-                className="w-8 h-8 rounded-full border-2 border-background shadow-sm"
+                className="w-8 h-8 rounded-full border-2 border-card-foreground/20 shadow-sm"
                 style={{ backgroundColor: `hsl(${currentTheme.color})` }}
               />
               <div>
-                <p className="text-sm font-medium">{currentTheme.name}</p>
+                <p className="text-sm font-medium text-card-foreground">{currentTheme.name}</p>
                 <p className="text-xs text-muted-foreground">{currentTheme.description}</p>
               </div>
             </div>
@@ -103,13 +103,13 @@ export function CompactSettingsPopup({ children }: SettingsPopupProps) {
       <PopoverTrigger asChild>
         {children}
       </PopoverTrigger>
-      <PopoverContent className="w-64" align="start" side="right" sideOffset={8}>
+      <PopoverContent className="w-64 bg-card border-border shadow-lg" align="start" side="right" sideOffset={8}>
         <div className="space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="font-medium">Settings</span>
+              <Settings className="h-4 w-4 text-accent-foreground" />
+              <span className="font-medium text-card-foreground">Settings</span>
             </div>
             <ThemeToggle />
           </div>
@@ -119,10 +119,10 @@ export function CompactSettingsPopup({ children }: SettingsPopupProps) {
           {/* Current Theme */}
           <div className="flex items-center gap-2">
             <div 
-              className="w-6 h-6 rounded-full border"
+              className="w-6 h-6 rounded-full border border-card-foreground/20"
               style={{ backgroundColor: `hsl(${currentTheme.color})` }}
             />
-            <span className="text-sm">{currentTheme.name} Theme</span>
+            <span className="text-sm text-card-foreground">{currentTheme.name} Theme</span>
           </div>
 
           {/* Color Picker */}

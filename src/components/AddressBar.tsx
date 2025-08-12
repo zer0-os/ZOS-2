@@ -62,7 +62,7 @@ export const AddressBar: React.FC<AddressBarProps> = ({
         <div className="relative">
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
-            placeholder="Search or enter address..."
+            placeholder="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-4 pr-8 text-foreground text-center bg-muted/50 border-transparent focus:border-ring text-xs placeholder:text-muted-foreground transition-colors"

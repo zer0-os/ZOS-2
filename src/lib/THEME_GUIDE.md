@@ -15,7 +15,7 @@ The theme system is based on CSS variables defined in `src/index.css` and manage
 ## Core Theme Colors
 
 ### Primary Colors
-- `--primary` - Main brand color (green: `142 76% 36%`)
+- `--primary` - Main brand color (green: `174 99% 48%`)
 - `--primary-foreground` - Text on primary backgrounds
 - `--secondary` - Secondary accent color
 - `--secondary-foreground` - Text on secondary backgrounds
@@ -140,13 +140,13 @@ Edit the CSS variables in `src/index.css`:
 
 ```css
 :root {
-  --primary: 142 76% 36%;  /* Your brand color */
+  --primary: 174 99% 48%;  /* Your brand color */
   --secondary: 220 14.3% 95.9%;
   /* ... other colors */
 }
 
 .dark {
-  --primary: 142 70% 45%;  /* Dark mode variant */
+  --primary: 174 99% 48%;  /* Dark mode variant */
   /* ... other dark colors */
 }
 ```
@@ -183,14 +183,14 @@ import { setCSSVariable, getCSSVariable } from '@/lib/theme'
 const currentPrimary = getCSSVariable('primary')
 
 // Update primary color dynamically
-setCSSVariable('primary', '300 100% 50%') // Bright green
+setCSSVariable('primary', '174 99% 48%') // Bright green
 ```
 
 ## Color Format
 
 Colors use HSL format without the `hsl()` wrapper:
 - Format: `hue saturation% lightness%`
-- Example: `142 76% 36%` = `hsl(142, 76%, 36%)`
+- Example: `174 99% 48%` = `hsl(174, 99%, 48%)`
 
 This format allows Tailwind to apply opacity modifiers:
 - `bg-primary/50` = 50% opacity primary color

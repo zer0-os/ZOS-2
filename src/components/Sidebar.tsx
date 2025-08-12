@@ -13,11 +13,13 @@ import n3oAvatar from '@/assets/n3o-avatar.jpg';
 interface SidebarProps {
   className?: string;
   onOpenApp?: (appId: string) => void;
+  selectedApp?: string | null;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   className = '',
-  onOpenApp
+  onOpenApp,
+  selectedApp
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -40,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => handleAppClick('chat')}
           onMouseEnter={() => setIsExpanded(true)}
           isExpanded={isExpanded}
+          className={selectedApp === 'chat' ? 'sidebar-item-selected' : ''}
         />
 
         <SidebarItem
@@ -48,6 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => handleAppClick('feed')}
           onMouseEnter={() => setIsExpanded(true)}
           isExpanded={isExpanded}
+          className={selectedApp === 'feed' ? 'sidebar-item-selected' : ''}
         />
 
         <SidebarItem
@@ -56,6 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => handleAppClick('wallet')}
           onMouseEnter={() => setIsExpanded(true)}
           isExpanded={isExpanded}
+          className={selectedApp === 'wallet' ? 'sidebar-item-selected' : ''}
         />
       </div>
 

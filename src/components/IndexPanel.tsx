@@ -8,7 +8,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft } from 'lucide-react';
+import { SuperButton } from '@/components/ui/super-button';
 
 interface IndexPanelProps {
   className?: string;
@@ -207,6 +208,7 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   // When selectedApp changes, set default tab and open first section
   useEffect(() => {
@@ -253,22 +255,31 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
   };
 
   return (
-    <Card 
-      className={`fixed left-16 top-10 w-64 h-[calc(100vh-2.5rem)] flex flex-col bg-transparent border-0 shadow-none rounded-none ${className}`}
-    >
-      {/* Search Input */}
-      <div className="px-4 pt-12 pb-0">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-8 bg-muted/50 text-foreground text-sm placeholder:text-muted-foreground focus:border-ring"
-          />
-        </div>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto">
+    <div className="fixed left-16 top-10 h-[calc(100vh-2.5rem)] w-64 flex flex-col">
+      <Card 
+        className={`flex flex-col bg-transparent border-0 shadow-none rounded-none transition-transform duration-300 ease-in-out w-64 overflow-hidden ${
+          isCollapsed ? 'transform -translate-x-full' : 'transform translate-x-0'
+        } ${className}`}
+        style={{ height: '100%' }}
+      >
+        <div className={`transition-opacity duration-300 ${
+          isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+        }`} style={{ 
+          transitionDelay: isCollapsed ? '0ms' : '0ms' 
+        }}>
+          {/* Search Input */}
+          <div className="px-4 pt-12 pb-0">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-8 bg-muted/50 text-foreground text-sm placeholder:text-muted-foreground focus:border-ring"
+              />
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto">
         {content ? (
           content.tabs ? (
             // Render tabbed content
@@ -363,7 +374,57 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
             </p>
           </div>
         )}
+          </div>
+        </div>
+      </Card>
+      
+      {/* Invite a Friend Super Button - positioned at bottom to align with sidebar avatar */}
+      <div 
+        className={`absolute bottom-0 left-0 right-0 px-4 pb-4 transition-opacity duration-300 ease-out ${
+          isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+        }`}
+        style={{ 
+          transitionDelay: isCollapsed ? '0ms' : '0ms' 
+        }}
+      >
+        <SuperButton 
+          variant="default" 
+          size="custom"
+          className="w-full h-9"
+          onClick={() => {
+            // TODO: Implement invite friend functionality
+            console.log('Invite a friend clicked');
+          }}
+        >
+          Invite a Friend
+        </SuperButton>
       </div>
-    </Card>
+      
+      {/* Collapse Button - inside the sliding panel */}
+      {!isCollapsed && (
+        <div className="absolute bottom-16 right-4">
+          <button
+            onClick={() => setIsCollapsed(true)}
+            className="w-6 h-6 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-105"
+            aria-label="Collapse panel"
+          >
+            <ChevronLeft className="h-3 w-3 text-muted-foreground transition-transform duration-300" />
+          </button>
+        </div>
+      )}
+      
+      {/* Expand Button - positioned outside the sliding panel */}
+      {isCollapsed && (
+        <div className="absolute bottom-16 left-0 z-10">
+          <button
+            onClick={() => setIsCollapsed(false)}
+            className="w-6 h-6 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md"
+            aria-label="Expand panel"
+          >
+            <ChevronLeft className="h-3 w-3 text-muted-foreground rotate-180 transition-transform duration-300" />
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
