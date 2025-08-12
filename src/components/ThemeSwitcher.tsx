@@ -58,7 +58,7 @@ export function ThemeToggle() {
       size="icon"
       onClick={cycleTheme}
       className="h-10 w-10"
-      title={`Current: ${THEMES[theme].name} - Click to cycle`}
+      title={`Current: ${THEMES[theme].name}`}
     >
       {getThemeIcon(theme)}
       <span className="sr-only">Cycle theme</span>

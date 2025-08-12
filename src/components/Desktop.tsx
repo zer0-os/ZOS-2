@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { IndexPanel } from './IndexPanel';
+
 import { useBackgroundClass } from '@/hooks/useBackgroundClass';
 
 interface DesktopProps {

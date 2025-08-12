@@ -6,6 +6,8 @@ import { Home, MessageCircle, Wallet, Settings } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeSwitcher';
 import { SettingsPopup } from '@/components/SettingsPopup';
 import { SidebarItem } from '@/components/SidebarItem';
+import { UserProfile } from '@/components/auth/UserProfile';
+import { useAuth } from '@/hooks/useAuth';
 
 import n3oAvatar from '@/assets/n3o-avatar.jpg';
 
@@ -22,6 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedApp
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { user, isAuthenticated } = useAuth();
 
   const handleAppClick = (appId: string) => {
     onOpenApp?.(appId);
@@ -89,37 +92,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* User Profile at the bottom */}
-      <div className="relative group h-10">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute left-3 h-10 w-10 transition-colors duration-200"
+      {isAuthenticated ? (
+        <UserProfile 
+          className="absolute left-3" 
           onMouseEnter={() => setIsExpanded(true)}
-        >
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={n3oAvatar} alt="n3o" />
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
-              🚀
-            </AvatarFallback>
-          </Avatar>
-          {/* Online status indicator */}
-          <div className="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-background" />
-        </Button>
-        <div
-          className={`absolute left-16 top-0 h-10 flex items-center pointer-events-none transition-all duration-300 ${
-            isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
-          }`}
-        >
-          <div className="flex flex-col items-start pl-2">
-            <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-200 whitespace-nowrap">
-              n3o
-            </span>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              0://n3o
-            </span>
+          isExpanded={isExpanded}
+          user={user}
+          variant="sidebar"
+        />
+      ) : (
+        <div className="relative group h-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-3 h-10 w-10 transition-colors duration-200"
+            onMouseEnter={() => setIsExpanded(true)}
+          >
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={n3oAvatar} alt="Guest" />
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                👤
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+          <div
+            className={`absolute left-16 top-0 h-10 flex items-center pointer-events-none transition-all duration-300 ${
+              isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+            }`}
+          >
+            <div className="flex flex-col items-start pl-2">
+              <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-200 whitespace-nowrap">
+                Guest
+              </span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                Not signed in
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </Card>
   );
 };
