@@ -27,7 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <Card 
-      className={`border text-card-foreground fixed left-0 top-8 h-[calc(100vh-2rem)] flex flex-col py-4 bg-card/90 backdrop-blur-sm border-r border-border shadow-sm rounded-none transition-all duration-300 ease-in-out ${
+      className={`border-0 text-card-foreground fixed left-0 top-8 h-[calc(100vh-2rem)] flex flex-col py-4 bg-transparent backdrop-blur-0 shadow-none rounded-none transition-all duration-300 ease-in-out ${
         isExpanded ? 'w-64' : 'w-16'
       } ${className}`}
       onMouseLeave={() => setIsExpanded(false)}

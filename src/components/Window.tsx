@@ -18,6 +18,7 @@ interface WindowProps {
   initialPosition?: { x: number; y: number };
   onPositionChange?: (position: { x: number; y: number }) => void;
   onSnapToEdge?: (side: 'left' | 'right' | null) => void;
+  isActive?: boolean;
   
   // For app window usage
   window?: AppWindowType;
@@ -32,6 +33,7 @@ interface AppWindowProps {
   onPositionChange?: (position: { x: number; y: number }) => void;
   onSnapToEdge?: (side: 'left' | 'right' | null) => void;
   className?: string;
+  isActive?: boolean;
 }
 
 type CombinedWindowProps = WindowProps | AppWindowProps;
@@ -59,6 +61,7 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
   let isMaximized: boolean = false;
   let isSnapped: 'left' | 'right' | null = null;
   let zIndex: number = 50;
+  let isActive: boolean = false;
 
   if (isAppWindow) {
     const appProps = props as AppWindowProps;
@@ -78,6 +81,7 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
     isMaximized = windowData.isMaximized || false;
     isSnapped = windowData.isSnapped || null;
     zIndex = windowData.zIndex || 50;
+    isActive = appProps.isActive || false;
   } else {
     const simpleProps = props as WindowProps;
     title = simpleProps.title || 'Window';
@@ -91,6 +95,7 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
     initialPosition = simpleProps.initialPosition || { x: 200, y: 150 };
     onPositionChange = simpleProps.onPositionChange;
     onSnapToEdge = simpleProps.onSnapToEdge;
+    isActive = simpleProps.isActive || false;
   }
 
   const { isDragging, dragRef, handleMouseDown } = useFastDraggable({
@@ -189,7 +194,9 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
       className={`fixed shadow-2xl border border-border bg-card/70 backdrop-blur-sm rounded-md ${
         isMaximized ? 'max-w-none min-w-0 w-full h-full rounded-none' : 'min-w-80'
       } ${
-        isDragging ? 'shadow-sm ring-1 ring-primary/30' : ''
+        isDragging ? 'shadow-sm ring-1 ring-[hsl(var(--ring-focus)/0.5)]' : ''
+      } ${
+        isActive ? 'ring-1 ring-[hsl(var(--ring-focus))]' : ''
       } ${
         isAppWindow && !isMaximized ? 'max-w-4xl' : ''
       } ${

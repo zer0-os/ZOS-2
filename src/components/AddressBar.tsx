@@ -65,7 +65,7 @@ export const AddressBar: React.FC<AddressBarProps> = ({
             placeholder="Search or enter address..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-4 pr-8 text-foreground text-center bg-muted/50 border-transparent focus:border-ring rounded-2xl text-xs placeholder:text-muted-foreground transition-colors"
+            className="pl-4 pr-8 text-foreground text-center bg-muted/50 border-transparent focus:border-ring text-xs placeholder:text-muted-foreground transition-colors"
             onFocus={(e) => {
               // Select all text when focused (like browser address bars)
               e.target.select();

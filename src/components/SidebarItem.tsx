@@ -1,5 +1,5 @@
 import React from 'react'
-import { ThemeButton } from '@/components/ui/theme-button'
+import { Button } from '@/components/ui/button'
 import type { LucideIcon } from 'lucide-react'
 
 interface SidebarItemProps {
@@ -22,7 +22,7 @@ export function SidebarItem({
   customContent
 }: SidebarItemProps) {
   const content = customContent || (Icon && (
-    <ThemeButton
+    <Button
       variant="ghost"
       size="icon"
       className="absolute left-3 h-10 w-10"
@@ -30,7 +30,7 @@ export function SidebarItem({
       onMouseEnter={onMouseEnter}
     >
       <Icon className="h-6 w-6" strokeWidth={1} />
-    </ThemeButton>
+    </Button>
   ))
 
   return (

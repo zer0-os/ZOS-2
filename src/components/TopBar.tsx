@@ -10,7 +10,7 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = ({ className = '' }) => {
   return (
     <Card 
-      className={`fixed top-0 left-0 right-0 h-10 flex items-center px-4 rounded-none z-50 bg-card/95 backdrop-blur-sm border-b ${className}`}
+      className={`fixed top-0 left-0 right-0 h-10 flex items-center px-4 rounded-none z-50 bg-transparent backdrop-blur-0 border-0 shadow-none ${className}`}
     >
       <div className="flex items-center mr-4">
         <img 

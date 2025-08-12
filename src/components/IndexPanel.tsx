@@ -261,10 +261,9 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-8 bg-muted/50 border-border text-foreground text-sm placeholder:text-muted-foreground focus:border-ring"
+            className="pl-10 h-8 bg-muted/50 text-foreground text-sm placeholder:text-muted-foreground focus:border-ring"
           />
         </div>
       </div>
@@ -274,12 +273,12 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
           content.tabs ? (
             // Render tabbed content
             <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-              <TabsList className="flex w-auto mx-4 mt-4 mb-2 bg-muted/50 h-8 gap-1 justify-start">
+              <TabsList className="flex w-auto mx-4 mt-4 mb-2 h-8 gap-1 justify-start">
                 {content.tabs.map((tab) => (
                   <TabsTrigger 
                     key={tab.id} 
                     value={tab.id}
-                    className="text-xs font-normal px-2.5 py-1 h-6 min-w-0"
+                    className="text-xs font-normal hover:text-foreground px-2.5 py-1 h-6 min-w-0"
                   >
                     {tab.label}
                   </TabsTrigger>
@@ -298,17 +297,16 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                       <AccordionItem 
                         key={section.id} 
                         value={section.id}
-                        className="border border-border rounded-lg bg-card/20"
                       >
-                        <AccordionTrigger className="px-4 py-3 text-muted-foreground hover:text-foreground hover:no-underline">
+                        <AccordionTrigger className="px-4 py-3 text-xs text-muted-foreground hover:text-foreground hover:no-underline">
                           {section.title}
                         </AccordionTrigger>
                         <AccordionContent className="px-4 pb-3">
-                          <div className="space-y-2">
+                          <div className="space-y-1">
                             {section.items.map((item, index) => (
                               <div 
                                 key={index}
-                                className="p-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
+                                className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
                                 onClick={() => onItemClick?.(selectedApp!, item)}
                               >
                                 {item}
@@ -335,17 +333,17 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                   <AccordionItem 
                     key={section.id} 
                     value={section.id}
-                    className="border border-border rounded-lg bg-card/20"
+                    className="rounded-lg bg-card/20"
                   >
-                    <AccordionTrigger className="px-4 py-3 text-muted-foreground hover:text-foreground hover:no-underline">
+                    <AccordionTrigger className="px-4 py-3 text-xs text-muted-foreground hover:text-foreground hover:no-underline">
                       {section.title}
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-3">
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         {section.items.map((item, index) => (
                           <div 
                             key={index}
-                            className="p-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
+                                                            className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
                             onClick={() => onItemClick?.(selectedApp!, item)}
                           >
                             {item}
