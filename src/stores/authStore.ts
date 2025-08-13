@@ -66,10 +66,14 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // Import authApi here to avoid circular dependency
-          const { authApi } = await import('@/lib/api');
+          // Import services here to avoid circular dependency
+          const { authService: authApi, userService, matrixService } = await import('@/api');
           
           const response = await authApi.login(credentials);
+          
+          if (response.extractedAccessToken) {
+            console.log('✅ ZOS token obtained:', response.extractedAccessToken.slice(0, 25) + '...');
+          }
           
           // Update state with initial user data from login response
           set({
@@ -79,21 +83,50 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
           
-          // Fetch complete user profile using the extracted access token
+          // Fetch complete user profile and Matrix SSO token using the extracted access token
           if (response.extractedAccessToken) {
             try {
-              const currentUser = await authApi.getProfile(response.extractedAccessToken);
+              // Fetch user profile and Matrix SSO token in parallel for better performance
+              const [currentUser, matrixSSOResponse] = await Promise.allSettled([
+                userService.getProfile(response.extractedAccessToken),
+                matrixService.getSSOToken(response.extractedAccessToken)
+              ]);
+
+              // Handle user profile result
+              let userData = response.user; // fallback to login response user data
+              if (currentUser.status === 'fulfilled') {
+                userData = currentUser.value;
+                console.log('✅ ZERO profile response successful');
+              }
+
+              // Handle Matrix SSO token result
+              let matrixToken: string | undefined;
+              if (matrixSSOResponse.status === 'fulfilled') {
+                matrixToken = matrixSSOResponse.value.token;
+              }
               
-              // Update with complete profile data
+              // Combine user data with Matrix token
+              const userWithMatrix = {
+                ...userData,
+                ...(matrixToken && { matrixAccessToken: matrixToken })
+              };
+              
               set({
-                user: currentUser,
+                user: userWithMatrix,
                 isAuthenticated: true,
                 error: null,
                 isLoading: false,
               });
-            } catch (profileError) {
-              console.error('Failed to fetch current user profile:', profileError);
-              // Continue with the login data we have - don't fail the entire login
+              
+            } catch (error) {
+              console.error('Failed to complete login process:', error);
+              // Continue with basic login data - don't fail the entire login
+              set({
+                user: response.user,
+                isAuthenticated: true,
+                error: null,
+                isLoading: false,
+              });
             }
           }
           
@@ -113,18 +146,20 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         
         try {
-          // Import authApi here to avoid circular dependency
-          const { authApi } = await import('@/lib/api');
+          // Import services here to avoid circular dependency
+          const { authService: authApi, matrixService } = await import('@/api');
           
           try {
-            await authApi.logout(); // This will clear the token from memory
+            await authApi.logout(); // This will clear the auth token from memory
           } catch (error) {
             // Even if backend logout fails, we still want to clear local state
             console.warn('Backend logout failed:', error);
             // Clear token from memory manually if API call failed
-            const { setCurrentAccessToken } = await import('@/lib/api');
-            setCurrentAccessToken(null);
+            authApi.setCurrentToken(null);
           }
+          
+          // Always clear Matrix token on logout
+          matrixService.clearMatrixToken();
           
           // Clear state (no localStorage involved)
           set({

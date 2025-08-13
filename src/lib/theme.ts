@@ -4,37 +4,8 @@
  */
 
 export type Theme = 'light' | 'midnight' | 'blackout'
-export type ThemeVariant = 'default' | 'blue' | 'purple' | 'orange' | 'red' | 'pink' | 'cyan'
+export type ThemeVariant = 'default' | 'blue' | 'purple'
 export type BackgroundVariant = 'default' | 'subtle' | 'gradient'
-
-export interface ThemeColors {
-  background: string
-  foreground: string
-  card: string
-  cardForeground: string
-  popover: string
-  popoverForeground: string
-  primary: string
-  primaryForeground: string
-  secondary: string
-  secondaryForeground: string
-  muted: string
-  mutedForeground: string
-  accent: string
-  accentForeground: string
-  destructive: string
-  destructiveForeground: string
-  border: string
-  input: string
-  ring: string
-  radius: string
-  success: string
-  successForeground: string
-  warning: string
-  warningForeground: string
-  info: string
-  infoForeground: string
-}
 
 /**
  * Available themes with their display names and descriptions
@@ -52,10 +23,6 @@ export const THEME_VARIANTS: Record<ThemeVariant, { name: string; description: s
   default: { name: 'Green', description: 'Default green theme', color: '174 99% 48%' },
   blue: { name: 'Blue', description: 'Classic blue theme', color: '221.2 83.2% 53.3%' },
   purple: { name: 'Purple', description: 'Rich purple theme', color: '262.1 83.3% 57.8%' },
-  orange: { name: 'Orange', description: 'Vibrant orange theme', color: '24.6 95% 53.1%' },
-  red: { name: 'Red', description: 'Bold red theme', color: '0 84.2% 60.2%' },
-  pink: { name: 'Pink', description: 'Soft pink theme', color: '322.2 84% 60.5%' },
-  cyan: { name: 'Cyan', description: 'Cool cyan theme', color: '188.7 94.5% 42.7%' },
 }
 
 /**
@@ -179,42 +146,6 @@ export function cycleTheme() {
 }
 
 /**
- * Create a custom theme variant by overriding CSS variables
- * This allows you to create theme variations without modifying components
- */
-export function createThemeVariant(
-  name: string,
-  lightColors: Partial<ThemeColors>,
-  darkColors?: Partial<ThemeColors>
-) {
-  if (typeof window === 'undefined') return
-  
-  const style = document.createElement('style')
-  style.id = `theme-variant-${name}`
-  
-  let css = `
-    .theme-${name} {
-      ${Object.entries(lightColors)
-        .map(([key, value]) => `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value};`)
-        .join('\n      ')}
-    }
-  `
-  
-  if (darkColors) {
-    css += `
-    .theme-${name}.dark {
-      ${Object.entries(darkColors)
-        .map(([key, value]) => `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value};`)
-        .join('\n      ')}
-    }
-    `
-  }
-  
-  style.textContent = css
-  document.head.appendChild(style)
-}
-
-/**
  * Apply a theme variant to the document
  */
 export function applyThemeVariant(variant: ThemeVariant) {
@@ -251,32 +182,4 @@ export function applyBackgroundVariant(variant: BackgroundVariant) {
   
   // Store the current background variant for components to access
   root.setAttribute('data-background-variant', variant)
-}
-
-/**
- * Get CSS variable value
- */
-export function getCSSVariable(name: string): string {
-  if (typeof window === 'undefined') return ''
-  
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue(`--${name}`)
-    .trim()
-}
-
-/**
- * Set CSS variable value
- */
-export function setCSSVariable(name: string, value: string) {
-  if (typeof window === 'undefined') return
-  
-  document.documentElement.style.setProperty(`--${name}`, value)
-}
-
-/**
- * Get the background class for the current background variant
- */
-export function getBackgroundClass(variant?: BackgroundVariant): string {
-  const currentVariant = variant || getBackgroundVariant()
-  return BACKGROUND_VARIANTS[currentVariant].className
 }

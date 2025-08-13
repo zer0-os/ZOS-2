@@ -43,6 +43,9 @@ export interface User {
   followersCount?: string;
   followingCount?: string;
   
+  // Matrix integration
+  matrixAccessToken?: string;
+  
   // Legacy fields for backward compatibility
   email?: string;
   username?: string;
@@ -94,4 +97,15 @@ export interface AuthError {
   code: string;
   message: string;
   details?: Record<string, any>;
+}
+
+// Matrix-specific types
+export interface MatrixSSOTokenResponse {
+  token: string;
+}
+
+export interface MatrixConfig {
+  homeserverUrl?: string;
+  accessToken?: string;
+  userId?: string;
 }

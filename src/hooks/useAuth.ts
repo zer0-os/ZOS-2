@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
-import { authApi, ApiError } from '@/lib/api';
+import { authService as authApi, ApiError } from '@/api';
 import type { SignupCredentials, SyncRequest } from '@/types/auth';
 
 // Query keys
@@ -108,62 +108,3 @@ export const useLogout = () => {
   };
 };
 
-// Profile query (disabled by default to prevent startup errors)
-// Note: This hook is mainly for manual profile refresh since login automatically fetches profile
-export const useProfile = (enabled: boolean = false, accessToken?: string) => {
-  const { isAuthenticated } = useAuth();
-
-  return useQuery({
-    queryKey: authKeys.profile(),
-    queryFn: () => {
-      if (!accessToken) {
-        throw new Error('Access token required for profile fetch');
-      }
-      return authApi.getProfile(accessToken);
-    },
-    enabled: enabled && isAuthenticated && !!accessToken,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-};
-
-
-
-// Token verification query (disabled by default to prevent startup errors)
-export const useVerifyToken = (enabled: boolean = false) => {
-  const { isAuthenticated, logout } = useAuth();
-
-  return useQuery({
-    queryKey: authKeys.verify(),
-    queryFn: authApi.verifyToken,
-    enabled: enabled && isAuthenticated,
-    retry: false,
-    staleTime: 1000 * 60 * 2, // 2 minutes
-    meta: {
-      onError: (error: ApiError) => {
-        // If token is invalid, logout user
-        if (error.status === 401) {
-          logout();
-        }
-      },
-    },
-  });
-};
-
-// Auto-refresh token hook
-export const useTokenRefresh = () => {
-  const { login, logout } = useAuth();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: authApi.refreshToken,
-    onSuccess: (data) => {
-      login(data.user, data.token);
-      queryClient.invalidateQueries({ queryKey: authKeys.all });
-    },
-    onError: () => {
-      // If refresh fails, logout user
-      logout();
-      queryClient.clear();
-    },
-  });
-};

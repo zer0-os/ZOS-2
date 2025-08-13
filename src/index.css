@@ -41,8 +41,6 @@
     --success-foreground: 355.7 100% 97.3%;
     --warning: 38 92% 50%;
     --warning-foreground: 48 96% 89%;
-    --info: 199 89% 48%;
-    --info-foreground: 210 20% 98%;
   }
 
   /* Midnight Theme - Dark blue with warmth */
@@ -71,8 +69,6 @@
     --success-foreground: 144 61% 20%;
     --warning: 38 92% 60%;
     --warning-foreground: 220 26% 14%;
-    --info: 199 89% 58%;
-    --info-foreground: 220 26% 14%;
   }
 
   /* Black Out Theme - Pure black for OLED */
@@ -101,173 +97,7 @@
     --success-foreground: 0 0% 0%;
     --warning: 38 92% 60%;
     --warning-foreground: 0 0% 0%;
-    --info: 199 89% 58%;
-    --info-foreground: 0 0% 0%;
   }
-}
-
-/* Additional Theme Variants */
-
-/* Blue Theme */
-.theme-blue {
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
-  --ring: 221.2 83.2% 53.3%;
-      --ring-focus: 221.2 90% 55%; /* Bright blue focus ring for blue theme */
-  --success: 221.2 83.2% 53.3%;
-  --success-foreground: 210 40% 98%;
-}
-
-.theme-blue.dark {
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --ring: 224.3 76.3% 94.1%;
-      --ring-focus: 200 90% 65%; /* Cyan focus ring for blue dark theme */
-  --success: 217.2 91.2% 59.8%;
-  --success-foreground: 222.2 84% 4.9%;
-}
-
-/* Purple Theme */
-.theme-purple {
-  --primary: 262.1 83.3% 57.8%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 270 3.2% 96.1%;
-  --secondary-foreground: 240 5.9% 10%;
-  --accent: 270 3.2% 96.1%;
-  --accent-foreground: 240 5.9% 10%;
-  --ring: 262.1 83.3% 57.8%;
-      --ring-focus: 262.1 90% 60%; /* Purple focus ring for purple theme */
-  --success: 174 99% 48%;
-  --success-foreground: 355.7 100% 97.3%;
-}
-
-.theme-purple.dark {
-  --primary: 263.4 70% 50.4%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 210 40% 98%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 210 40% 98%;
-  --ring: 263.4 70% 50.4%;
-      --ring-focus: 280 85% 70%; /* Bright purple focus ring for purple dark theme */
-  --success: 174 99% 48%;
-  --success-foreground: 144 61% 20%;
-}
-
-/* Orange Theme */
-.theme-orange {
-  --primary: 24.6 95% 53.1%;
-  --primary-foreground: 60 9.1% 97.8%;
-  --secondary: 60 4.8% 95.9%;
-  --secondary-foreground: 24 9.8% 10%;
-  --accent: 60 4.8% 95.9%;
-  --accent-foreground: 24 9.8% 10%;
-  --ring: 24.6 95% 53.1%;
-      --ring-focus: 24.6 95% 55%; /* Bright orange focus ring for orange theme */
-  --success: 174 99% 48%;
-  --success-foreground: 355.7 100% 97.3%;
-}
-
-.theme-orange.dark {
-  --primary: 20.5 90.2% 48.2%;
-  --primary-foreground: 60 9.1% 97.8%;
-  --secondary: 12 6.5% 15.1%;
-  --secondary-foreground: 60 9.1% 97.8%;
-  --accent: 12 6.5% 15.1%;
-  --accent-foreground: 60 9.1% 97.8%;
-  --ring: 20.5 90.2% 48.2%;
-      --ring-focus: 30 95% 65%; /* Bright yellow-orange focus ring for orange dark theme */
-  --success: 174 99% 48%;
-  --success-foreground: 144 61% 20%;
-}
-
-/* Red Theme */
-.theme-red {
-  --primary: 0 84.2% 60.2%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 9%;
-  --accent: 0 0% 96.1%;
-  --accent-foreground: 0 0% 9%;
-  --ring: 0 84.2% 60.2%;
-      --ring-focus: 0 90% 55%; /* Bright red focus ring for red theme */
-  --success: 174 99% 48%;
-  --success-foreground: 355.7 100% 97.3%;
-}
-
-.theme-red.dark {
-  --primary: 0 62.8% 30.6%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 210 40% 98%;
-  --accent: 0 0% 14.9%;
-  --accent-foreground: 210 40% 98%;
-  --ring: 0 62.8% 30.6%;
-      --ring-focus: 350 85% 65%; /* Pink-red focus ring for red dark theme */
-  --success: 174 99% 48%;
-  --success-foreground: 144 61% 20%;
-}
-
-/* Pink Theme */
-.theme-pink {
-  --primary: 322.2 84% 60.5%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 320 7% 96%;
-  --secondary-foreground: 320 13% 9%;
-  --accent: 320 7% 96%;
-  --accent-foreground: 320 13% 9%;
-  --ring: 322.2 84% 60.5%;
-      --ring-focus: 322.2 90% 60%; /* Bright pink focus ring for pink theme */
-  --success: 174 99% 48%;
-  --success-foreground: 355.7 100% 97.3%;
-}
-
-.theme-pink.dark {
-  --primary: 322.2 84% 60.5%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 320 6% 15%;
-  --secondary-foreground: 210 40% 98%;
-  --accent: 320 6% 15%;
-  --accent-foreground: 210 40% 98%;
-  --ring: 322.2 84% 60.5%;
-      --ring-focus: 310 85% 70%; /* Bright magenta focus ring for pink dark theme */
-  --success: 174 99% 48%;
-  --success-foreground: 144 61% 20%;
-}
-
-/* Cyan Theme */
-.theme-cyan {
-  --primary: 188.7 94.5% 42.7%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 185 10% 95%;
-  --secondary-foreground: 185 15% 9%;
-  --accent: 185 10% 95%;
-  --accent-foreground: 185 15% 9%;
-  --ring: 188.7 94.5% 42.7%;
-      --ring-focus: 188.7 94.5% 50%; /* Bright teal focus ring for teal theme */
-  --success: 174 99% 48%;
-  --success-foreground: 355.7 100% 97.3%;
-}
-
-.theme-cyan.dark {
-  --primary: 188.7 94.5% 42.7%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 185 10% 15%;
-  --secondary-foreground: 210 40% 98%;
-  --accent: 185 10% 15%;
-  --accent-foreground: 210 40% 98%;
-  --ring: 188.7 94.5% 42.7%;
-      --ring-focus: 180 85% 65%; /* Bright aqua focus ring for teal dark theme */
-  --success: 174 99% 48%;
-  --success-foreground: 144 61% 20%;
 }
 
 @layer base {
@@ -341,13 +171,15 @@
   }
 }
 
-/* Custom animation delays */
-.animation-delay-2000 {
-  animation-delay: 2s;
+/* Theme Variants - Override primary colors */
+.theme-blue {
+  --primary: 221.2 83.2% 53.3%;
+  --ring: 221.2 83.2% 53.3%;
 }
 
-.animation-delay-4000 {
-  animation-delay: 4s;
+.theme-purple {
+  --primary: 262.1 83.3% 57.8%;
+  --ring: 262.1 83.3% 57.8%;
 }
 
 /* High-performance dragging optimizations */

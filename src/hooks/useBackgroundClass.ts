@@ -11,14 +11,3 @@ export function useBackgroundClass(override?: BackgroundVariant): string {
   return BACKGROUND_VARIANTS[variant].className
 }
 
-/**
- * Hook to get background variant information
- */
-export function useBackgroundVariant() {
-  const { backgroundVariant } = useThemeContext()
-  return {
-    variant: backgroundVariant,
-    info: BACKGROUND_VARIANTS[backgroundVariant],
-    className: BACKGROUND_VARIANTS[backgroundVariant].className
-  }
-}
