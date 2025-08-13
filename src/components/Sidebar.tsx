@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Home, MessageCircle, Wallet, Settings } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeSwitcher';
-import { SettingsPopup } from '@/components/SettingsPopup';
 import { SidebarItem } from '@/components/SidebarItem';
 import { UserProfile } from '@/components/auth/UserProfile';
 import { useAuth } from '@/hooks/useAuth';
@@ -71,7 +70,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="mt-auto space-y-2 mb-4">
         {/* Theme Toggle */}
         <SidebarItem
-          label="Toggle Theme"
           onMouseEnter={() => setIsExpanded(true)}
           isExpanded={isExpanded}
           customContent={
@@ -81,13 +79,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }
         />
 
-        {/* Settings Button with Popup */}
+        {/* Settings Button (disabled popup) */}
         <SidebarItem
           icon={Settings}
-          label="Settings"
           onMouseEnter={() => setIsExpanded(true)}
           isExpanded={isExpanded}
-          wrapper={SettingsPopup}
         />
       </div>
 
@@ -96,7 +92,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <UserProfile 
           className="absolute left-3" 
           onMouseEnter={() => setIsExpanded(true)}
-          isExpanded={isExpanded}
           user={user}
           variant="sidebar"
         />
@@ -110,25 +105,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Avatar className="h-8 w-8">
               <AvatarImage src={n3oAvatar} alt="Guest" />
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
                 👤
               </AvatarFallback>
             </Avatar>
           </Button>
-          <div
-            className={`absolute left-16 top-0 h-10 flex items-center pointer-events-none transition-all duration-300 ${
-              isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
-            }`}
-          >
-            <div className="flex flex-col items-start pl-2">
-              <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-200 whitespace-nowrap">
-                Guest
-              </span>
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                Not signed in
-              </span>
-            </div>
-          </div>
         </div>
       )}
     </Card>

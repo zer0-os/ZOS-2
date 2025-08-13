@@ -45,10 +45,10 @@ export function ThemeToggle() {
 
   const getThemeIcon = (themeName: string) => {
     switch (themeName) {
-      case 'light': return <Sun className="!h-5 !w-5" strokeWidth={1} />
-      case 'midnight': return <Moon className="!h-5 !w-5" strokeWidth={1} />
-      case 'blackout': return <Circle className="!h-5 !w-5 fill-current" strokeWidth={1} />
-      default: return <Sun className="!h-5 !w-5" strokeWidth={1} />
+      case 'light': return <Sun className="!h-5 !w-5" strokeWidth={1.5} />
+      case 'midnight': return <Moon className="!h-5 !w-5" strokeWidth={1.5} />
+      case 'blackout': return <Circle className="!h-5 !w-5 fill-current" strokeWidth={1.5} />
+      default: return <Sun className="!h-5 !w-5" strokeWidth={1.5} />
     }
   }
 

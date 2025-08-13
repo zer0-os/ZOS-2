@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 
 interface SidebarItemProps {
   icon?: LucideIcon
-  label: string
+  label?: string
   onClick?: () => void
   onMouseEnter?: () => void
   isExpanded: boolean
@@ -38,15 +38,17 @@ export function SidebarItem({
   return (
     <div className={`relative group h-10 ${className}`} onMouseEnter={onMouseEnter}>
       {Wrapper ? <Wrapper>{content}</Wrapper> : content}
-      <div
-        className={`absolute left-16 top-0 h-10 flex items-center pointer-events-none transition-all duration-300 ${
-          isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
-        }`}
-      >
-        <span className="text-sm text-muted-foreground whitespace-nowrap">
-          {label}
-        </span>
-      </div>
+      {label && (
+        <div
+          className={`absolute left-16 top-0 h-10 flex items-center pointer-events-none transition-all duration-300 ${
+            isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+          }`}
+        >
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {label}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
