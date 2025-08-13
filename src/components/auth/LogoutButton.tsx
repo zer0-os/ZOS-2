@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import { useAuth, useLogout } from '@/hooks/useAuth';
 import { LogOut, User } from 'lucide-react';
 
-interface SimpleLogoutButtonProps {
+interface LogoutButtonProps {
   className?: string;
 }
 
-export const SimpleLogoutButton: React.FC<SimpleLogoutButtonProps> = ({ className = '' }) => {
+export const LogoutButton: React.FC<LogoutButtonProps> = ({ className = '' }) => {
   const { user, isAuthenticated } = useAuth();
   const logoutMutation = useLogout();
 

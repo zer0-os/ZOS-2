@@ -3,17 +3,14 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
 import { useAuth, useLogout } from '@/hooks/useAuth';
-import { LogOut, User, Palette, ArrowLeft } from 'lucide-react';
-import { CompactThemePicker } from '@/components/ThemePicker';
-import { CompactBackgroundPicker } from '@/components/BackgroundPicker';
-import { ThemeToggle } from '@/components/ThemeSwitcher';
-import { useThemeContext } from '@/contexts/ThemeProvider';
-import { THEME_VARIANTS, THEMES } from '@/lib/theme';
+import { LogOut, User, Palette } from 'lucide-react';
+
+import { ProfileDetails } from './ProfileDetails';
+import { ThemeSettings } from './theme/ThemeSettings';
 import placeholderAvatar from '@/assets/n3o-avatar.jpg';
 
-interface UserProfileProps {
+interface SettingsProps {
   className?: string;
   onMouseEnter?: () => void;
   isExpanded?: boolean;
@@ -21,7 +18,7 @@ interface UserProfileProps {
   variant?: 'topbar' | 'sidebar';
 }
 
-export const UserProfile: React.FC<UserProfileProps> = ({ 
+export const Settings: React.FC<SettingsProps> = ({ 
   className = '', 
   onMouseEnter,
   user: propUser,
@@ -31,7 +28,6 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   const logoutMutation = useLogout();
   const [showProfileDetail, setShowProfileDetail] = useState(false);
   const [showThemePanel, setShowThemePanel] = useState(false);
-  const { theme, themeVariant } = useThemeContext();
   
   // Use prop user or auth user
   const user = propUser || authUser;
@@ -90,134 +86,9 @@ export const UserProfile: React.FC<UserProfileProps> = ({
     ? user.profileSummary.primaryEmail
     : user?.name || user?.username || user?.email || 'User';
 
-  // Profile detail panel component
-  const ProfileDetailPanel = () => (
-    <Card className="border-0 shadow-none flex flex-col h-full overflow-y-auto">
-      <div className="p-4 border-b flex items-center space-x-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => setShowProfileDetail(false)}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h3 className="font-medium">Profile Details</h3>
-      </div>
-      
-      <div className="p-6 flex-1">
-        <div className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Name</label>
-            <p className="text-sm mt-1">{displayName}</p>
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Email</label>
-            <p className="text-sm mt-1">{user?.profileSummary?.primaryEmail || user?.handle || user?.email || 'No email'}</p>
-          </div>
-          
-          {user?.primaryZID && (
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">ZID</label>
-              <p className="text-sm mt-1">{user.primaryZID}</p>
-            </div>
-          )}
-          
-          {user?.profileId && (
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Profile ID</label>
-              <p className="text-sm mt-1">{user.profileId}</p>
-            </div>
-          )}
-          
-          {user?.matrixId && (
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Matrix ID</label>
-              <p className="text-sm mt-1">{user.matrixId}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
 
-  // Theme settings panel component
-  const ThemeSettingsPanel = () => {
-    const currentTheme = THEME_VARIANTS[themeVariant];
-    
-    return (
-      <Card className="border-0 shadow-none flex flex-col h-full overflow-y-auto">
-        <div className="p-4 border-b flex items-center space-x-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setShowThemePanel(false)}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h3 className="font-medium">Theme Settings</h3>
-        </div>
-        
-        <div className="p-6 flex-1 space-y-6">
-          {/* Theme Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Theme Mode</span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm">{THEMES[theme].name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {THEMES[theme].description}
-                </p>
-              </div>
-              <ThemeToggle />
-            </div>
-          </div>
 
-          <Separator />
 
-          {/* Theme Colors Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Theme Colors</span>
-            </div>
-
-            {/* Current Theme Display */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/10 border border-border/50">
-              <div 
-                className="w-6 h-6 rounded-full border border-card-foreground/20"
-                style={{ backgroundColor: `hsl(${currentTheme.color})` }}
-              />
-              <div>
-                <p className="text-sm font-medium">{currentTheme.name}</p>
-                <p className="text-xs text-muted-foreground">{currentTheme.description}</p>
-              </div>
-            </div>
-
-            {/* Color Picker */}
-            <CompactThemePicker />
-          </div>
-
-          <Separator />
-
-          {/* Background Picker */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Background</span>
-            </div>
-            <CompactBackgroundPicker />
-          </div>
-        </div>
-      </Card>
-    );
-  };
 
   // Sidebar variant
   if (variant === 'sidebar') {
@@ -255,9 +126,9 @@ export const UserProfile: React.FC<UserProfileProps> = ({
             }}
           >
             {showProfileDetail ? (
-              <ProfileDetailPanel />
+              <ProfileDetails user={user} onBack={() => setShowProfileDetail(false)} />
             ) : showThemePanel ? (
-              <ThemeSettingsPanel />
+              <ThemeSettings onBack={() => setShowThemePanel(false)} />
             ) : (
               <Card className="border-0 shadow-none flex flex-col h-full overflow-y-auto">
                 <div className="px-6 pt-16 pb-6 border-b">
@@ -287,7 +158,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                 <div className="p-2 flex-1 flex flex-col justify-end">
                   <Button
                     variant="ghost"
-                    className="w-full justify-start h-8 px-2 text-sm"
+                    className="w-full justify-start h-8 px-2 text-sm font-normal"
                     onClick={() => setShowProfileDetail(true)}
                   >
                     <User className="mr-2 h-4 w-4" />
@@ -296,7 +167,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                   
                   <Button
                     variant="ghost"
-                    className="w-full justify-start h-8 px-2 text-sm"
+                    className="w-full justify-start h-8 px-2 text-sm font-normal"
                     onClick={() => setShowThemePanel(true)}
                   >
                     <Palette className="mr-2 h-4 w-4" />
@@ -307,7 +178,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 
                   <Button
                     variant="ghost"
-                    className="w-full justify-start h-8 px-2 text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="w-full justify-start h-8 px-2 text-sm font-normal text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={handleLogout}
                     disabled={logoutMutation.isPending}
                   >
@@ -342,9 +213,9 @@ export const UserProfile: React.FC<UserProfileProps> = ({
       
       <PopoverContent className="w-64 p-0" align="end">
         {showProfileDetail ? (
-          <ProfileDetailPanel />
+          <ProfileDetails user={user} onBack={() => setShowProfileDetail(false)} />
         ) : showThemePanel ? (
-          <ThemeSettingsPanel />
+          <ThemeSettings onBack={() => setShowThemePanel(false)} />
         ) : (
           <Card className="border-0 shadow-none">
             <div className="px-6 pt-16 pb-6 border-b">
@@ -374,7 +245,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
             <div className="p-2">
               <Button
                 variant="ghost"
-                className="w-full justify-start h-8 px-2 text-sm"
+                className="w-full justify-start h-8 px-2 text-sm font-normal"
                 onClick={() => setShowProfileDetail(true)}
               >
                 <User className="mr-2 h-4 w-4" />
@@ -383,7 +254,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               
               <Button
                 variant="ghost"
-                className="w-full justify-start h-8 px-2 text-sm"
+                className="w-full justify-start h-8 px-2 text-sm font-normal"
                 onClick={() => setShowThemePanel(true)}
               >
                 <Palette className="mr-2 h-4 w-4" />
@@ -394,7 +265,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 
               <Button
                 variant="ghost"
-                className="w-full justify-start h-8 px-2 text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="w-full justify-start h-8 px-2 text-sm font-normal text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={handleLogout}
                 disabled={logoutMutation.isPending}
               >

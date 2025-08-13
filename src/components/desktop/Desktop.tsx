@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sidebar } from './Sidebar';
-import { TopBar } from './TopBar';
+import { Topbar } from './TopBar';
 import { IndexPanel } from './IndexPanel';
 
 import { useBackgroundClass } from '@/hooks/useBackgroundClass';
@@ -57,7 +57,7 @@ export const Desktop: React.FC<DesktopProps> = ({
       <IndexPanel selectedApp={selectedApp} onItemClick={handleItemClick} />
 
       {/* Top Bar */}
-      <TopBar />
+      <Topbar />
 
       {/* Desktop content */}
       <ScrollArea className="relative z-10 h-screen ml-80 pt-12">

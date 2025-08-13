@@ -73,11 +73,11 @@ function App() {
 ### 2. Using Theme Controls
 
 ```tsx
-import { ThemeSwitcher, ThemeToggle } from '@/components/ThemeSwitcher'
+import { ThemeToggle } from '@/components/settings/theme/ThemeToggle'
 import { useThemeContext } from '@/contexts/ThemeProvider'
 
-// Full theme switcher with light/dark/system options
-<ThemeSwitcher />
+// Theme toggle button (cycles through themes)
+<ThemeToggle />
 
 // Simple toggle between light/dark
 <ThemeToggle />
@@ -216,7 +216,7 @@ src/
 ├── contexts/
 │   └── ThemeProvider.tsx  # Theme context provider
 ├── components/
-│   └── ThemeSwitcher.tsx  # Theme switching components
+│   └── ThemeToggle.tsx    # Theme toggle component
 └── index.css              # CSS variables and base styles
 ```
 

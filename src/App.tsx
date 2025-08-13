@@ -1,5 +1,5 @@
-import { Desktop } from './components/Desktop'
-import { Window } from './components/Window'
+import { Desktop } from './components/desktop/Desktop'
+import { Window } from './components/desktop/Window'
 // import { Button } from './components/ui/button'
 // import { Plus } from 'lucide-react'
 import { useAppManager } from './hooks/useAppManager'

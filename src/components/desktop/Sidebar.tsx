@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Home, MessageCircle, Wallet, Settings } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeSwitcher';
-import { SidebarItem } from '@/components/SidebarItem';
-import { UserProfile } from '@/components/auth/UserProfile';
+import { Home, MessageCircle, Wallet, Settings as SettingsIcon } from 'lucide-react';
+import { ThemeToggle } from '@/components/settings/theme/ThemeToggle';
+import { SidebarItem } from './SidebarItem';
+import { Settings } from '@/components/settings/Settings';
 import { useAuth } from '@/hooks/useAuth';
 
 import n3oAvatar from '@/assets/n3o-avatar.jpg';
@@ -81,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Settings Button (disabled popup) */}
         <SidebarItem
-          icon={Settings}
+          icon={SettingsIcon}
           onMouseEnter={() => setIsExpanded(true)}
           isExpanded={isExpanded}
         />
@@ -89,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* User Profile at the bottom */}
       {isAuthenticated ? (
-        <UserProfile 
+        <Settings 
           className="absolute left-3" 
           onMouseEnter={() => setIsExpanded(true)}
           user={user}

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { AddressBar } from './AddressBar';
+import { GlobalSearch } from './GlobalSearch';
 import zeroLogo from '@/assets/zero-logo.png';
 
-interface TopBarProps {
+interface TopbarProps {
   className?: string;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ className = '' }) => {
+export const Topbar: React.FC<TopbarProps> = ({ className = '' }) => {
   return (
     <Card 
       className={`fixed top-0 left-0 right-0 h-10 flex items-center px-4 rounded-none z-50 bg-transparent backdrop-blur-0 border-0 shadow-none ${className}`}
@@ -20,7 +20,7 @@ export const TopBar: React.FC<TopBarProps> = ({ className = '' }) => {
         />
       </div>
       <div className="flex-1 max-w-2xl mx-auto">
-        <AddressBar />
+        <GlobalSearch />
       </div>
     </Card>
   );

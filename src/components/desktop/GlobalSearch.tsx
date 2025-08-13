@@ -7,11 +7,11 @@ import {
   Search
 } from 'lucide-react';
 
-interface AddressBarProps {
+interface GlobalSearchProps {
   className?: string;
 }
 
-export const AddressBar: React.FC<AddressBarProps> = ({
+export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   className = ''
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
