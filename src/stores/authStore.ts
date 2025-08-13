@@ -10,6 +10,7 @@ interface AuthStore extends AuthState {
   login: (user: User, token: string, accessToken?: string) => void;
   logout: () => void;
   clearError: () => void;
+  updateUser: (userUpdates: Partial<User>) => void;
   // Async actions
   loginAsync: (credentials: { email: string; password: string }) => Promise<void>;
   logoutAsync: () => Promise<void>;
@@ -61,18 +62,23 @@ export const useAuthStore = create<AuthStore>()(
 
       clearError: () => set({ error: null }),
 
+      updateUser: (userUpdates: Partial<User>) => set((state) => ({
+        user: state.user ? { ...state.user, ...userUpdates } : null
+      })),
+
       // Async actions - proper Zustand pattern
       loginAsync: async (credentials) => {
         set({ isLoading: true, error: null });
         
         try {
           // Import services here to avoid circular dependency
-          const { authService: authApi, userService, matrixService } = await import('@/api');
+          const { authService: authApi, userService } = await import('@/api');
           
           const response = await authApi.login(credentials);
           
-          if (response.extractedAccessToken) {
-            console.log('✅ ZOS token obtained:', response.extractedAccessToken.slice(0, 25) + '...');
+          if (response.accessToken) {
+            console.log('✅ ZOS token obtained:', response.accessToken.slice(0, 25) + '...');
+            console.log('Full ZOS token:', response.accessToken);
           }
           
           // Update state with initial user data from login response
@@ -83,44 +89,20 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
           
-          // Fetch complete user profile and Matrix SSO token using the extracted access token
-          if (response.extractedAccessToken) {
+          // Fetch complete user profile using the access token
+          if (response.accessToken) {
             try {
-              // Fetch user profile and Matrix SSO token in parallel for better performance
-              const [currentUser, matrixSSOResponse] = await Promise.allSettled([
-                userService.getProfile(response.extractedAccessToken),
-                matrixService.getSSOToken(response.extractedAccessToken)
-              ]);
-
-              // Handle user profile result
-              let userData = response.user; // fallback to login response user data
-              if (currentUser.status === 'fulfilled') {
-                userData = currentUser.value;
-                console.log('✅ ZERO profile response successful');
-              }
-
-              // Handle Matrix SSO token result
-              let matrixToken: string | undefined;
-              if (matrixSSOResponse.status === 'fulfilled') {
-                matrixToken = matrixSSOResponse.value.token;
-              }
-              
-              // Combine user data with Matrix token
-              const userWithMatrix = {
-                ...userData,
-                ...(matrixToken && { matrixAccessToken: matrixToken })
-              };
+              const userData = await userService.getProfile(response.accessToken);
+              console.log('✅ ZERO profile response successful');
               
               set({
-                user: userWithMatrix,
+                user: userData,
                 isAuthenticated: true,
                 error: null,
                 isLoading: false,
               });
-              
-            } catch (error) {
-              console.error('Failed to complete login process:', error);
-              // Continue with basic login data - don't fail the entire login
+            } catch (profileError) {
+              // Use the user data from login response as fallback
               set({
                 user: response.user,
                 isAuthenticated: true,
@@ -131,7 +113,6 @@ export const useAuthStore = create<AuthStore>()(
           }
           
         } catch (error: any) {
-          console.error('Login failed:', error);
           set({
             error: error.message || 'Login failed',
             isLoading: false,
@@ -147,19 +128,17 @@ export const useAuthStore = create<AuthStore>()(
         
         try {
           // Import services here to avoid circular dependency
-          const { authService: authApi, matrixService } = await import('@/api');
+          const { authService: authApi } = await import('@/api');
           
           try {
             await authApi.logout(); // This will clear the auth token from memory
           } catch (error) {
             // Even if backend logout fails, we still want to clear local state
-            console.warn('Backend logout failed:', error);
             // Clear token from memory manually if API call failed
             authApi.setCurrentToken(null);
           }
           
-          // Always clear Matrix token on logout
-          matrixService.clearMatrixToken();
+
           
           // Clear state (no localStorage involved)
           set({
@@ -178,7 +157,7 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
           
-          console.error('Logout error:', error);
+
         }
       },
     }),

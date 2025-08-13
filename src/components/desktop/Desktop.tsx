@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './TopBar';
 import { IndexPanel } from './IndexPanel';
+import { MatrixDevPanel } from '@/components/matrix/MatrixDevPanel';
 
 import { useBackgroundClass } from '@/hooks/useBackgroundClass';
 
@@ -65,6 +66,9 @@ export const Desktop: React.FC<DesktopProps> = ({
           {children}
         </div>
       </ScrollArea>
+
+      {/* Matrix Development Panel - Floating */}
+      <MatrixDevPanel />
     </Card>
   );
 };

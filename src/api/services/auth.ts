@@ -26,38 +26,7 @@ class TokenManager {
     this.currentAccessToken = null;
   }
 
-  /**
-   * Extract access token from auth response
-   */
-  extractTokenFromResponse(response: AuthResponse): string | null {
-    const possibleTokenFields = [
-      'accessToken',
-      'access_token', 
-      'ssToken',
-      'sessionToken',
-      'zos_access_token',
-      'token'
-    ];
 
-    for (const field of possibleTokenFields) {
-      const tokenField = (response as any)[field];
-      
-      // Check if token field has a .value property
-      if (tokenField && typeof tokenField === 'object' && tokenField.value) {
-        const tokenValue = tokenField.value;
-        if (typeof tokenValue === 'string' && tokenValue.length > 50) {
-          return tokenValue;
-        }
-      }
-      
-      // Also check if the field itself is a string token (fallback)
-      if (tokenField && typeof tokenField === 'string' && tokenField.length > 50) {
-        return tokenField;
-      }
-    }
-
-    return null;
-  }
 }
 
 /**
@@ -83,7 +52,7 @@ export class AuthService {
   /**
    * Login user
    */
-  async login(credentials: LoginCredentials): Promise<AuthResponse & { extractedAccessToken?: string }> {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>(
       authConfig.endpoints.login,
       {
@@ -92,27 +61,16 @@ export class AuthService {
       }
     );
 
-    // Extract and store the access token
-    const extractedAccessToken = this.tokenManager.extractTokenFromResponse(response);
-    
-    if (extractedAccessToken) {
-      this.tokenManager.setToken(extractedAccessToken);
+    // Store the access token
+    if (response.accessToken) {
+      this.tokenManager.setToken(response.accessToken);
     } else {
       this.tokenManager.clearToken();
     }
     
-    return {
-      ...response,
-      extractedAccessToken: extractedAccessToken || undefined
-    };
+    return response;
   }
 
-  /**
-   * Sign up new user
-   */
-  async signup(credentials: SignupCredentials): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(authConfig.endpoints.signup, credentials);
-  }
 
   /**
    * Logout user
@@ -126,26 +84,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Refresh authentication token
-   */
-  async refreshToken(): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(authConfig.endpoints.refresh);
-  }
-
-  /**
-   * Verify current token
-   */
-  async verifyToken(): Promise<{ valid: boolean }> {
-    return apiClient.get(authConfig.endpoints.verify);
-  }
-
-  /**
-   * Sync user data
-   */
-  async sync(data: SyncRequest = {}): Promise<SyncResponse> {
-    return apiClient.post<SyncResponse>(authConfig.endpoints.sync, data);
-  }
 }
 
 // Export singleton instance

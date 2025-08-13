@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth, useLogout } from '@/hooks/useAuth';
-import { LogOut, User, Palette } from 'lucide-react';
+import { LogOut, User, Palette, MessageSquare } from 'lucide-react';
 
 import { ProfileDetails } from './ProfileDetails';
 import { ThemeSettings } from './theme/ThemeSettings';
+import { MatrixTest } from '@/components/matrix/MatrixTest';
 import placeholderAvatar from '@/assets/n3o-avatar.jpg';
 
 interface SettingsProps {
@@ -28,6 +29,7 @@ export const Settings: React.FC<SettingsProps> = ({
   const logoutMutation = useLogout();
   const [showProfileDetail, setShowProfileDetail] = useState(false);
   const [showThemePanel, setShowThemePanel] = useState(false);
+  const [showMatrixTest, setShowMatrixTest] = useState(false);
   
   // Use prop user or auth user
   const user = propUser || authUser;
@@ -216,6 +218,21 @@ export const Settings: React.FC<SettingsProps> = ({
           <ProfileDetails user={user} onBack={() => setShowProfileDetail(false)} />
         ) : showThemePanel ? (
           <ThemeSettings onBack={() => setShowThemePanel(false)} />
+        ) : showMatrixTest ? (
+          <div className="p-4">
+            <div className="flex items-center mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMatrixTest(false)}
+                className="mr-2 h-8 w-8 p-0"
+              >
+                ←
+              </Button>
+              <h3 className="font-medium">Matrix Test</h3>
+            </div>
+            <MatrixTest />
+          </div>
         ) : (
           <Card className="border-0 shadow-none">
             <div className="px-6 pt-16 pb-6 border-b">
@@ -259,6 +276,15 @@ export const Settings: React.FC<SettingsProps> = ({
               >
                 <Palette className="mr-2 h-4 w-4" />
                 Theme
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-8 px-2 text-sm font-normal"
+                onClick={() => setShowMatrixTest(true)}
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                🧪 Matrix Test
               </Button>
 
               <div className="border-t my-2" />

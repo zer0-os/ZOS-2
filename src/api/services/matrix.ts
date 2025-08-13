@@ -1,17 +1,25 @@
 import type { MatrixSSOTokenResponse, MatrixConfig } from '@/types/auth';
-import { apiClient, ApiError } from '../client';
+import { ApiError } from '../client';
 
 /**
  * Matrix service for handling Matrix-specific operations via Zero API
  */
 export class MatrixService {
   private matrixAccessToken: string | null = null;
+  private matrixUserId: string | null = null;
 
   /**
    * Get current Matrix access token from memory
    */
   getCurrentMatrixToken(): string | null {
     return this.matrixAccessToken;
+  }
+
+  /**
+   * Get current Matrix user ID from memory
+   */
+  getCurrentMatrixUserId(): string | null {
+    return this.matrixUserId;
   }
 
   /**
@@ -22,10 +30,18 @@ export class MatrixService {
   }
 
   /**
-   * Clear Matrix access token from memory
+   * Set Matrix user ID in memory
+   */
+  setCurrentMatrixUserId(userId: string | null): void {
+    this.matrixUserId = userId;
+  }
+
+  /**
+   * Clear Matrix access token and user ID from memory
    */
   clearMatrixToken(): void {
     this.matrixAccessToken = null;
+    this.matrixUserId = null;
   }
 
   /**
@@ -48,36 +64,43 @@ export class MatrixService {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${zeroAccessToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:141.0) Gecko/20100101 Firefox/141.0',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Accept-Encoding': 'gzip, deflate, br, zstd',
-          'X-APP-PLATFORM': 'zos',
-          'Origin': 'https://zos.zero.tech',
-          'Referer': 'https://zos.zero.tech/',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'same-site',
         },
         mode: 'cors',
         credentials: 'include',
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
         throw new ApiError(
           response.status,
           'MATRIX_SSO_ERROR',
-          `Matrix SSO request failed: ${response.status} ${response.statusText}`
+          `Matrix SSO request failed: ${response.status} ${response.statusText}`,
+          { responseText: errorText }
         );
       }
 
-      const data: MatrixSSOTokenResponse = await response.json();
+      const data = await response.json();
+      
+      console.log('🔍 Matrix API raw response:', data);
+      console.log('🔍 Matrix API response type:', typeof data);
+      console.log('🔍 Matrix API response keys:', Array.isArray(data) ? `Array[${data.length}]` : Object.keys(data));
+
+      // Check if server is returning unexpected format
+      if (Array.isArray(data)) {
+        throw new ApiError(
+          500,
+          'UNEXPECTED_RESPONSE_FORMAT',
+          `Matrix SSO endpoint returned array instead of object: ${JSON.stringify(data)}`
+        );
+      }
 
       // Store the Matrix token in memory for the session
-      if (data.token) {
+      if (data && data.token) {
         this.setCurrentMatrixToken(data.token);
-        console.log('✅ Matrix token obtained:', data.token.slice(0, 25) + '...');
+        console.log('✅ Matrix SSO token obtained:', data.token.slice(0, 25) + '...');
+        console.log('Full Matrix token:', data.token);
+      } else {
+        console.log('❌ No token found in response:', data);
       }
 
       return data;
@@ -98,6 +121,111 @@ export class MatrixService {
   }
 
   /**
+   * Set Matrix user ID from Zero profile data
+   * The Matrix user ID is provided in the Zero profile response as matrixId
+   * 
+   * @param matrixId - The Matrix user ID from Zero profile (e.g., "@user:matrix.zero.tech")
+   */
+  setMatrixUserIdFromProfile(matrixId: string | undefined): void {
+    if (matrixId) {
+      this.setCurrentMatrixUserId(matrixId);
+    }
+  }
+
+  /**
+   * Test Matrix connection by fetching basic account info
+   * This is a simple way to verify the Matrix token and connection are working
+   * 
+   * @returns Promise with basic Matrix account information
+   */
+  async testMatrixConnection(): Promise<{
+    success: boolean;
+    userId?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    homeserver?: string;
+    error?: string;
+  }> {
+    if (!this.matrixAccessToken) {
+      return {
+        success: false,
+        error: 'No Matrix access token available'
+      };
+    }
+
+    try {
+      const homeserverUrl = 'https://zos-home-2-e24b9412096f.herokuapp.com';
+      
+      // Test 1: Get current user info (whoami)
+      const whoamiResponse = await fetch(`${homeserverUrl}/_matrix/client/r0/account/whoami`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.matrixAccessToken}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!whoamiResponse.ok) {
+        throw new Error(`Whoami request failed: ${whoamiResponse.status} ${whoamiResponse.statusText}`);
+      }
+
+      const whoamiData = await whoamiResponse.json();
+      
+      // Test 2: Get display name (optional, might fail if not set)
+      let displayName: string | undefined;
+      try {
+        const profileResponse = await fetch(`${homeserverUrl}/_matrix/client/r0/profile/${whoamiData.user_id}/displayname`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${this.matrixAccessToken}`,
+            'Accept': 'application/json',
+          },
+        });
+        
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          displayName = profileData.displayname;
+        }
+      } catch (profileError) {
+        // Display name fetch failed, continue without it
+      }
+
+      // Test 3: Get avatar URL (optional, might fail if not set)
+      let avatarUrl: string | undefined;
+      try {
+        const avatarResponse = await fetch(`${homeserverUrl}/_matrix/client/r0/profile/${whoamiData.user_id}/avatar_url`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${this.matrixAccessToken}`,
+            'Accept': 'application/json',
+          },
+        });
+        
+        if (avatarResponse.ok) {
+          const avatarData = await avatarResponse.json();
+          avatarUrl = avatarData.avatar_url;
+        }
+      } catch (avatarError) {
+        // Avatar URL fetch failed, continue without it
+      }
+      
+      return {
+        success: true,
+        userId: whoamiData.user_id,
+        displayName,
+        avatarUrl,
+        homeserver: homeserverUrl,
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
    * Initialize Matrix client configuration
    * This prepares the configuration object needed for Matrix client initialization
    * 
@@ -106,9 +234,9 @@ export class MatrixService {
    */
   getMatrixConfig(homeserverUrl?: string): MatrixConfig {
     return {
-      homeserverUrl: homeserverUrl || 'https://matrix.zero.tech',
+      homeserverUrl: homeserverUrl || 'https://zos-home-2-e24b9412096f.herokuapp.com',
       accessToken: this.matrixAccessToken || undefined,
-      userId: undefined, // Will be set by Matrix client after initialization
+      userId: this.matrixUserId || undefined,
     };
   }
 
