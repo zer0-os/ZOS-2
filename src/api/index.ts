@@ -10,20 +10,20 @@
  */
 
 // Export base client and error handling
-export { ApiClient, ApiError, apiClient } from './client';
+export { ApiClient, ApiError, apiClient } from './http-client';
 
 // Import services first
-import { authService } from './services/auth';
-import { userService } from './services/user';
-import { matrixService } from './services/matrix';
+import { authService } from '../adapters/auth';
+import { userService } from '../adapters/user';
+import { matrixService } from '../adapters/matrix';
 
 // Export services
-export { AuthService, authService } from './services/auth';
-export { UserService, userService } from './services/user';
-export { MatrixService, matrixService } from './services/matrix';
+export { AuthService, authService } from '../adapters/auth';
+export { UserService, userService } from '../adapters/user';
+export { MatrixService, matrixService } from '../adapters/matrix';
 
 // Legacy compatibility exports (for gradual migration)
-export { authService as authApi } from './services/auth';
+export { authService as authApi } from '../adapters/auth';
 
 // Legacy token management functions
 export const getCurrentAccessToken = () => authService.getCurrentToken();

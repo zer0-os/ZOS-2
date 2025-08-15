@@ -1,9 +1,9 @@
-import { Desktop } from './components/desktop/Desktop'
-import { Window } from './components/desktop/Window'
-// import { Button } from './components/ui/button'
+import { Desktop } from './os/desktop/components/Desktop'
+import { Window } from './os/desktop/components/Window'
+// import { Button } from './ui/button'
 // import { Plus } from 'lucide-react'
-import { useAppManager } from './hooks/useAppManager'
-import { getAppById } from './factory-apps/registry'
+import { useAppManager } from './os/desktop/useAppManager'
+import { getAppById } from './apps/app-registry'
 
 function App() {
   const {

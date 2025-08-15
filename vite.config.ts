@@ -13,4 +13,19 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  build: {
+    // Ensure CSP compatibility by avoiding eval in production
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+      mangle: true,
+    },
+  },
+  define: {
+    // Ensure process.env is properly defined for Matrix SDK
+    global: 'globalThis',
+  },
 })
