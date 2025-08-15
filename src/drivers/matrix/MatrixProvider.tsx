@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as sdk from "matrix-js-sdk";
 import type { MatrixClient } from "matrix-js-sdk";
 import { useAuthStore } from '@/kernel/auth/store/authStore';
-import { matrixService, authService } from '@/api';
+import { matrixService, authService } from '@/network';
 import { authConfig } from '@/kernel/auth/auth-config';
 
 interface MatrixContextType {

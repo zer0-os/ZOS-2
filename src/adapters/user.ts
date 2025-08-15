@@ -1,5 +1,5 @@
 import type { User } from '@/kernel/auth/types/auth';
-import { ApiError } from '../api/http-client';
+import { ApiError } from '../network/http-client';
 
 /**
  * User service for profile and user-related operations

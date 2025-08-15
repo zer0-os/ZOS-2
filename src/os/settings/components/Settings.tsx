@@ -8,7 +8,7 @@ import { LogOut, User, Palette, MessageSquare } from 'lucide-react';
 import { authConfig } from '@/kernel/auth/auth-config';
 
 import { ProfileDetails } from './ProfileDetails';
-import { ThemeSettings } from './theme/ThemeSettings';
+import { ThemeSettings } from './theme-settings/ThemeSettings';
 import { MatrixTest } from '@/apps/chat/matrix/MatrixTest';
 import placeholderAvatar from '@/os/desktop/assets/n3o-avatar.jpg';
 

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { ThemeProvider } from './os/theme/ThemeProvider'
-import { MatrixProvider } from './drivers/matrix/MatrixProvider'
+import { ServicesProvider } from './kernel/providers/ServicesProvider'
 import { QueryProvider } from './kernel/providers/QueryProvider'
 import { AuthGuard } from '@/kernel/auth/components/AuthGuard'
 
@@ -12,9 +12,9 @@ createRoot(document.getElementById('root')!).render(
     <QueryProvider>
       <ThemeProvider defaultTheme="light">
         <AuthGuard>
-          <MatrixProvider>
+          <ServicesProvider>
             <App />
-          </MatrixProvider>
+          </ServicesProvider>
         </AuthGuard>
       </ThemeProvider>
     </QueryProvider>

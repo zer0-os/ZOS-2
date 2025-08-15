@@ -6,7 +6,7 @@ import type {
   SyncResponse 
 } from '@/kernel/auth/types/auth';
 import { authConfig } from '@/kernel/auth/auth-config';
-import { apiClient } from '../api/http-client';
+import { apiClient } from '../network/http-client';
 
 /**
  * Token management utilities

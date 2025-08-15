@@ -1,45 +1,50 @@
-import type { MatrixSSOTokenResponse, MatrixConfig } from '@/kernel/auth/types/auth';
-import { ApiError } from '../api/http-client';
+/**
+ * MatrixAdapter - Implements ChatPort interface
+ * Translates between Matrix shapes and domain models
+ * Orchestrates calls using the MatrixDriver
+ * Stateless/pure as possible
+ */
+
+import type { ChatPort, ChatMessage, ChatRoom, ChatUser } from '@/kernel/ports/chat';
+import type { MatrixDriver } from '@/drivers/matrix/MatrixDriver';
+import type { MatrixEvent, Room } from 'matrix-js-sdk';
+import { ApiError } from '../network/http-client';
+
+export interface MatrixSSOTokenResponse {
+  token: string;
+}
+
+export interface MatrixConfig {
+  homeserverUrl?: string;
+  accessToken?: string;
+  userId?: string;
+}
 
 /**
- * Matrix service for handling Matrix-specific operations via Zero API
+ * Matrix SSO Token Service
+ * Handles token exchange with Zero API - separate from chat functionality
  */
-export class MatrixService {
+export class MatrixTokenService {
   private matrixAccessToken: string | null = null;
   private matrixUserId: string | null = null;
-  private lastZeroToken: string | null = null; // Track the ZOS token used to get Matrix token
+  private lastZeroToken: string | null = null;
 
-  /**
-   * Get current Matrix access token from memory
-   */
   getCurrentMatrixToken(): string | null {
     return this.matrixAccessToken;
   }
 
-  /**
-   * Get current Matrix user ID from memory
-   */
   getCurrentMatrixUserId(): string | null {
     return this.matrixUserId;
   }
 
-  /**
-   * Set Matrix access token in memory
-   */
   setCurrentMatrixToken(token: string | null): void {
     this.matrixAccessToken = token;
   }
 
-  /**
-   * Set Matrix user ID in memory
-   */
   setCurrentMatrixUserId(userId: string | null): void {
     this.matrixUserId = userId;
   }
 
-  /**
-   * Clear Matrix access token and user ID from memory
-   */
   clearMatrixToken(): void {
     this.matrixAccessToken = null;
     this.matrixUserId = null;
@@ -48,10 +53,6 @@ export class MatrixService {
 
   /**
    * Get Matrix SSO token using Zero access token
-   * This token is required for Matrix operations and is different from the Zero access token
-   * 
-   * @param zeroAccessToken - The Zero.tech access token obtained from login
-   * @returns Promise<MatrixSSOTokenResponse> - Contains the Matrix-specific SSO token
    */
   async getSSOToken(zeroAccessToken: string): Promise<MatrixSSOTokenResponse> {
     if (!zeroAccessToken) {
@@ -62,8 +63,6 @@ export class MatrixService {
     if (this.matrixAccessToken && this.lastZeroToken === zeroAccessToken) {
       return { token: this.matrixAccessToken };
     }
-
-
 
     try {
       const baseUrl = 'https://zosapi.zero.tech';
@@ -96,7 +95,6 @@ export class MatrixService {
 
       const data = await response.json();
       
-      // Check if server is returning unexpected format
       if (Array.isArray(data)) {
         throw new ApiError(
           500,
@@ -105,7 +103,6 @@ export class MatrixService {
         );
       }
 
-      // Validate token format
       if (!data || !data.token || typeof data.token !== 'string') {
         throw new ApiError(
           500,
@@ -115,7 +112,6 @@ export class MatrixService {
         );
       }
 
-      // Store the Matrix token and associated ZOS token in memory for the session
       this.setCurrentMatrixToken(data.token);
       this.lastZeroToken = zeroAccessToken;
 
@@ -136,118 +132,25 @@ export class MatrixService {
     }
   }
 
-  /**
-   * Set Matrix user ID from Zero profile data
-   * The Matrix user ID is provided in the Zero profile response as matrixId
-   * 
-   * @param matrixId - The Matrix user ID from Zero profile (e.g., "@user:matrix.zero.tech")
-   */
+  hasMatrixToken(): boolean {
+    return !!this.matrixAccessToken;
+  }
+
+  hasValidMatrixTokenFor(zeroAccessToken: string): boolean {
+    return !!(this.matrixAccessToken && this.lastZeroToken === zeroAccessToken);
+  }
+
+  isValidMatrixToken(token?: string): boolean {
+    const tokenToCheck = token || this.matrixAccessToken;
+    return !!(tokenToCheck && typeof tokenToCheck === 'string' && tokenToCheck.length > 10);
+  }
+
   setMatrixUserIdFromProfile(matrixId: string | undefined): void {
     if (matrixId) {
       this.setCurrentMatrixUserId(matrixId);
     }
   }
 
-  /**
-   * Test Matrix connection by fetching basic account info
-   * This is a simple way to verify the Matrix token and connection are working
-   * 
-   * @returns Promise with basic Matrix account information
-   */
-  async testMatrixConnection(): Promise<{
-    success: boolean;
-    userId?: string;
-    displayName?: string;
-    avatarUrl?: string;
-    homeserver?: string;
-    error?: string;
-  }> {
-    if (!this.matrixAccessToken) {
-      return {
-        success: false,
-        error: 'No Matrix access token available'
-      };
-    }
-
-    try {
-      const homeserverUrl = 'https://zos-home-2-e24b9412096f.herokuapp.com';
-      
-      // Test 1: Get current user info (whoami)
-      const whoamiResponse = await fetch(`${homeserverUrl}/_matrix/client/v3/account/whoami`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.matrixAccessToken}`,
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!whoamiResponse.ok) {
-        throw new Error(`Whoami request failed: ${whoamiResponse.status} ${whoamiResponse.statusText}`);
-      }
-
-      const whoamiData = await whoamiResponse.json();
-      
-      // Test 2: Get display name (optional, might fail if not set)
-      let displayName: string | undefined;
-      try {
-        const profileResponse = await fetch(`${homeserverUrl}/_matrix/client/v3/profile/${whoamiData.user_id}/displayname`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${this.matrixAccessToken}`,
-            'Accept': 'application/json',
-          },
-        });
-        
-        if (profileResponse.ok) {
-          const profileData = await profileResponse.json();
-          displayName = profileData.displayname;
-        }
-      } catch (profileError) {
-        // Display name fetch failed, continue without it
-      }
-
-      // Test 3: Get avatar URL (optional, might fail if not set)
-      let avatarUrl: string | undefined;
-      try {
-        const avatarResponse = await fetch(`${homeserverUrl}/_matrix/client/v3/profile/${whoamiData.user_id}/avatar_url`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${this.matrixAccessToken}`,
-            'Accept': 'application/json',
-          },
-        });
-        
-        if (avatarResponse.ok) {
-          const avatarData = await avatarResponse.json();
-          avatarUrl = avatarData.avatar_url;
-        }
-      } catch (avatarError) {
-        // Avatar URL fetch failed, continue without it
-      }
-      
-      return {
-        success: true,
-        userId: whoamiData.user_id,
-        displayName,
-        avatarUrl,
-        homeserver: homeserverUrl,
-      };
-
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-
-  /**
-   * Initialize Matrix client configuration
-   * This prepares the configuration object needed for Matrix client initialization
-   * 
-   * @param homeserverUrl - Optional Matrix homeserver URL (defaults to Zero's Matrix server)
-   * @returns MatrixConfig object for Matrix client initialization
-   */
   getMatrixConfig(homeserverUrl?: string): MatrixConfig {
     return {
       homeserverUrl: homeserverUrl || 'https://zos-home-2-e24b9412096f.herokuapp.com',
@@ -255,39 +158,375 @@ export class MatrixService {
       userId: this.matrixUserId || undefined,
     };
   }
+}
 
-  /**
-   * Check if Matrix token is available
-   */
-  hasMatrixToken(): boolean {
-    return !!this.matrixAccessToken;
+/**
+ * MatrixAdapter - Implements ChatPort using MatrixDriver
+ */
+export class MatrixAdapter implements ChatPort {
+  private driver: MatrixDriver;
+  private messageCallbacks: Array<(message: ChatMessage) => void> = [];
+  private roomCallbacks: Array<(room: ChatRoom) => void> = [];
+  private connectionCallbacks: Array<(connected: boolean) => void> = [];
+
+  constructor(driver: MatrixDriver) {
+    this.driver = driver;
+    this.setupDriverListeners();
   }
 
-  /**
-   * Check if we have a valid Matrix token for the current ZOS token
-   */
-  hasValidMatrixTokenFor(zeroAccessToken: string): boolean {
-    return !!(this.matrixAccessToken && this.lastZeroToken === zeroAccessToken);
+  // Room operations
+  async getRooms(): Promise<ChatRoom[]> {
+    const client = this.driver.getClient();
+    if (!client) {
+      throw new Error('Matrix client not available');
+    }
+
+    // Ensure client is syncing to get room data
+    if (!this.driver.hasSyncStarted()) {
+      console.log('[MatrixAdapter] Starting sync to get room data...');
+      try {
+        await this.driver.start();
+      } catch (error) {
+        console.error('[MatrixAdapter] Failed to start sync:', error);
+        // Try to continue anyway - might have cached data
+      }
+    }
+
+    const rooms = client.getRooms();
+    
+    // Filter to joined rooms and sort by bump stamp to get most recent
+    const sortedRooms = rooms
+      .filter(room => room.getMyMembership() === 'join')
+      .sort((a, b) => {
+        // @ts-ignore - getBumpStamp might not be in type definitions
+        const stampA = a.getBumpStamp?.() ?? a.getLastActiveTimestamp() ?? 0;
+        // @ts-ignore
+        const stampB = b.getBumpStamp?.() ?? b.getLastActiveTimestamp() ?? 0;
+        return stampB - stampA; // Descending order (most recent first)
+      })
+      .slice(0, 20); // Only return the 20 most recent rooms
+    
+    console.log(`[MatrixAdapter] Returning ${sortedRooms.length} most recent rooms out of ${rooms.length} total`);
+    
+    return sortedRooms.map(room => this.mapRoomToChatRoom(room));
   }
 
-  /**
-   * Validate Matrix token format (basic validation)
-   */
-  isValidMatrixToken(token?: string): boolean {
-    const tokenToCheck = token || this.matrixAccessToken;
-    return !!(tokenToCheck && typeof tokenToCheck === 'string' && tokenToCheck.length > 10);
+  async getRoom(roomId: string): Promise<ChatRoom | null> {
+    const client = this.driver.getClient();
+    if (!client) {
+      throw new Error('Matrix client not available');
+    }
+
+    const room = client.getRoom(roomId);
+    if (!room) return null;
+
+    return this.mapRoomToChatRoom(room);
   }
 
+  async joinRoom(roomId: string): Promise<void> {
+    const client = this.driver.getClient();
+    if (!client) {
+      throw new Error('Matrix client not available');
+    }
+
+    await client.joinRoom(roomId);
+  }
+
+  async leaveRoom(roomId: string): Promise<void> {
+    const client = this.driver.getClient();
+    if (!client) {
+      throw new Error('Matrix client not available');
+    }
+
+    await client.leave(roomId);
+  }
+
+  // Message operations
+  async getMessages(roomId: string, limit: number = 50): Promise<ChatMessage[]> {
+    const client = this.driver.getClient();
+    if (!client) {
+      throw new Error('Matrix client not available');
+    }
+
+    const room = client.getRoom(roomId);
+    if (!room) {
+      throw new Error(`Room ${roomId} not found`);
+    }
+
+    // Get the live timeline
+    const timeline = room.getLiveTimeline();
+    const events = timeline.getEvents();
+
+    // If we don't have enough events in the timeline, try to paginate backwards
+    if (events.length < limit) {
+      console.log(`[MatrixAdapter] Paginating to load ${limit} messages for room ${roomId}`);
+      try {
+        // @ts-ignore - Matrix SDK method
+        await client.paginateEventTimeline(timeline, {
+          backwards: true,
+          limit: limit
+        });
+      } catch (error) {
+        console.warn('[MatrixAdapter] Failed to paginate timeline:', error);
+      }
+    }
+
+    // Get updated events after pagination
+    const allEvents = timeline.getEvents();
+    
+    // Filter for message events and transform them
+    return allEvents
+      .filter(event => event.getType() === 'm.room.message')
+      .slice(-limit)
+      .map(event => this.mapEventToChatMessage(event, room));
+  }
+
+  async loadMoreMessages(roomId: string, _fromToken?: string, limit: number = 50): Promise<ChatMessage[]> {
+    const client = this.driver.getClient();
+    if (!client) {
+      throw new Error('Matrix client not available');
+    }
+
+    const room = client.getRoom(roomId);
+    if (!room) {
+      throw new Error(`Room ${roomId} not found`);
+    }
+
+    // Paginate backwards from the current position
+    const timeline = room.getLiveTimeline();
+    
+    try {
+      // @ts-ignore - Matrix SDK method
+      const paginationResult = await client.paginateEventTimeline(timeline, {
+        backwards: true,
+        limit: limit
+      });
+
+      if (!paginationResult) {
+        return []; // No more messages to load
+      }
+
+      // Get the newly loaded events
+      const events = timeline.getEvents();
+      
+      return events
+        .filter(event => event.getType() === 'm.room.message')
+        .slice(0, limit) // Get the oldest messages that were just loaded
+        .map(event => this.mapEventToChatMessage(event, room));
+    } catch (error) {
+      console.error('[MatrixAdapter] Failed to load more messages:', error);
+      return [];
+    }
+  }
+
+  async sendMessage(roomId: string, content: string): Promise<ChatMessage> {
+    const client = this.driver.getClient();
+    if (!client) {
+      throw new Error('Matrix client not available');
+    }
+
+    const response = await client.sendTextMessage(roomId, content);
+    
+    // Create a temporary message object since we don't have the full event yet
+    return {
+      id: response.event_id || `temp-${Date.now()}`,
+      roomId,
+      sender: client.getUserId() || 'unknown',
+      content,
+      timestamp: Date.now(),
+      type: 'text'
+    };
+  }
+
+  // User operations
+  async getCurrentUser(): Promise<ChatUser | null> {
+    const client = this.driver.getClient();
+    if (!client) return null;
+
+    const userId = client.getUserId();
+    if (!userId) return null;
+
+    try {
+      const profile = await client.getProfileInfo(userId);
+      return {
+        id: userId,
+        displayName: profile.displayname,
+        avatarUrl: profile.avatar_url,
+        presence: 'online' // Matrix presence would need separate API call
+      };
+    } catch (error) {
+      return {
+        id: userId,
+        displayName: userId,
+        presence: 'online'
+      };
+    }
+  }
+
+  async getRoomMembers(roomId: string): Promise<ChatUser[]> {
+    const client = this.driver.getClient();
+    if (!client) {
+      throw new Error('Matrix client not available');
+    }
+
+    const room = client.getRoom(roomId);
+    if (!room) {
+      throw new Error(`Room ${roomId} not found`);
+    }
+
+    const members = room.getJoinedMembers();
+    return Object.values(members).map(member => ({
+      id: member.userId,
+      displayName: member.name,
+      avatarUrl: member.getAvatarUrl(client.baseUrl, 64, 64, 'crop', false, false) || undefined,
+      presence: 'online' // Would need presence API
+    }));
+  }
+
+  // Connection state
+  isConnected(): boolean {
+    return this.driver.isReady();
+  }
+
+  async connect(): Promise<void> {
+    await this.driver.start();
+  }
+
+  async disconnect(): Promise<void> {
+    await this.driver.stop();
+  }
+
+  async waitForSync(timeoutMs?: number): Promise<void> {
+    await this.driver.waitForSync(timeoutMs);
+  }
+
+  // Event handling
+  onMessage(callback: (message: ChatMessage) => void): () => void {
+    this.messageCallbacks.push(callback);
+    return () => {
+      const index = this.messageCallbacks.indexOf(callback);
+      if (index > -1) {
+        this.messageCallbacks.splice(index, 1);
+      }
+    };
+  }
+
+  onRoomUpdate(callback: (room: ChatRoom) => void): () => void {
+    this.roomCallbacks.push(callback);
+    return () => {
+      const index = this.roomCallbacks.indexOf(callback);
+      if (index > -1) {
+        this.roomCallbacks.splice(index, 1);
+      }
+    };
+  }
+
+  onConnectionChange(callback: (connected: boolean) => void): () => void {
+    this.connectionCallbacks.push(callback);
+    return () => {
+      const index = this.connectionCallbacks.indexOf(callback);
+      if (index > -1) {
+        this.connectionCallbacks.splice(index, 1);
+      }
+    };
+  }
+
+  // Private helper methods
+  private setupDriverListeners(): void {
+    // Listen to driver messages and translate to domain events
+    this.driver.onMessage((event, room) => {
+      const message = this.mapEventToChatMessage(event, room);
+      this.messageCallbacks.forEach(callback => callback(message));
+      
+      // Also trigger room update when a new message arrives
+      // This ensures the room list re-sorts by bumpStamp
+      const chatRoom = this.mapRoomToChatRoom(room);
+      this.roomCallbacks.forEach(callback => callback(chatRoom));
+    });
+
+    // Listen to driver room updates
+    this.driver.onRoomUpdate((room) => {
+      const chatRoom = this.mapRoomToChatRoom(room);
+      this.roomCallbacks.forEach(callback => callback(chatRoom));
+    });
+
+    // Listen to driver state changes
+    this.driver.onStateChange((state) => {
+      const connected = state.connected && !state.error;
+      this.connectionCallbacks.forEach(callback => callback(connected));
+    });
+  }
+
+  private mapRoomToChatRoom(room: Room): ChatRoom {
+    const roomType = this.determineRoomType(room);
+    
+    // Use getBumpStamp() for sliding sync recency (MSC4186)
+    // This is a monotonic index that increases with activity
+    // @ts-ignore - getBumpStamp might not be in type definitions yet
+    const bumpStamp = room.getBumpStamp?.() || 0;
+    
+    // Also keep lastActiveTimestamp as fallback
+    const lastActiveTimestamp = room.getLastActiveTimestamp();
+
+    // Don't include any messages - pure lazy loading
+    // Messages will only be fetched when a room is actually opened
+
+    return {
+      id: room.roomId,
+      name: room.name || room.roomId,
+      type: roomType,
+      memberCount: room.getJoinedMemberCount(),
+      lastMessage: undefined, // No messages until room is opened
+      lastActiveTimestamp,
+      bumpStamp,
+      isJoined: room.getMyMembership() === 'join',
+      isEncrypted: room.hasEncryptionStateEvent()
+    };
+  }
+
+  private mapEventToChatMessage(event: MatrixEvent, room: Room): ChatMessage {
+    const content = event.getContent();
+    
+    return {
+      id: event.getId() || `unknown-${Date.now()}`,
+      roomId: room.roomId,
+      sender: event.getSender() || 'unknown',
+      content: content.body || '[No content]',
+      timestamp: event.getTs(),
+      type: this.determineMessageType(content)
+    };
+  }
+
+  private determineRoomType(room: Room): 'direct' | 'group' | 'channel' {
+    // Simple heuristic - could be improved with room state analysis
+    const memberCount = room.getJoinedMemberCount();
+    const roomName = room.name || '';
+    
+    if (memberCount === 2) return 'direct';
+    if (roomName.startsWith('#')) return 'channel';
+    return 'group';
+  }
+
+  private determineMessageType(content: any): 'text' | 'image' | 'file' {
+    if (content.msgtype === 'm.image') return 'image';
+    if (content.msgtype === 'm.file') return 'file';
+    return 'text';
+  }
+
+
+
   /**
-   * Get Matrix user ID from stored token (if available)
-   * Note: This is a placeholder - actual Matrix user ID extraction would depend on token format
+   * Cleanup method
    */
-  getMatrixUserId(): string | null {
-    // This would need to be implemented based on how Matrix tokens encode user information
-    // For now, return null as we'd need Matrix client to determine the user ID
-    return null;
+  dispose(): void {
+    this.messageCallbacks = [];
+    this.roomCallbacks = [];
+    this.connectionCallbacks = [];
   }
 }
 
-// Export singleton instance
-export const matrixService = new MatrixService();
+// Export singleton instances for backward compatibility
+export const matrixTokenService = new MatrixTokenService();
+
+// Note: MatrixAdapter instances should be created by the session binder
+// export const matrixAdapter = new MatrixAdapter(matrixDriver); // Will be handled by session binder

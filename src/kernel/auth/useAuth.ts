@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/kernel/auth/store/authStore';
-import { authService as authApi, ApiError } from '@/api';
+import { authService as authApi, ApiError } from '@/network';
 import type { SignupCredentials, SyncRequest } from '@/kernel/auth/types/auth';
 
 // Query keys

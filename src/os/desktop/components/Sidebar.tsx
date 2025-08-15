@@ -3,7 +3,7 @@ import { Card } from '@/ui/card';
 import { Button } from '@/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/ui/avatar';
 import { Home, MessageCircle, Wallet, Settings as SettingsIcon } from 'lucide-react';
-import { ThemeToggle } from '@/os/settings/components/theme/ThemeToggle';
+import { ThemeToggle } from '@/os/settings/components/theme-settings/ThemeToggle';
 import { SidebarItem } from './SidebarItem';
 import { Settings } from '@/os/settings/components/Settings';
 import { useAuth } from '@/kernel/auth/useAuth';

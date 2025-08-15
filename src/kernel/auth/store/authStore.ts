@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthStore>()(
         
         try {
           // Import services here to avoid circular dependency
-          const { authService: authApi, userService } = await import('@/api');
+          const { authService: authApi, userService } = await import('@/network');
           const response = await authApi.login(credentials);
           // Update state with initial user data from login response
           set({
@@ -120,7 +120,7 @@ export const useAuthStore = create<AuthStore>()(
         
         try {
           // Import services here to avoid circular dependency
-          const { authService: authApi } = await import('@/api');
+          const { authService: authApi } = await import('@/network');
           
           try {
             await authApi.logout(); // This will clear the auth token from memory

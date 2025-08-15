@@ -15,15 +15,16 @@ export { ApiClient, ApiError, apiClient } from './http-client';
 // Import services first
 import { authService } from '../adapters/auth';
 import { userService } from '../adapters/user';
-import { matrixService } from '../adapters/matrix';
+import { matrixTokenService } from '../adapters/matrix';
 
 // Export services
 export { AuthService, authService } from '../adapters/auth';
 export { UserService, userService } from '../adapters/user';
-export { MatrixService, matrixService } from '../adapters/matrix';
+export { MatrixTokenService, matrixTokenService } from '../adapters/matrix';
 
 // Legacy compatibility exports (for gradual migration)
 export { authService as authApi } from '../adapters/auth';
+export { matrixTokenService as matrixService } from '../adapters/matrix';
 
 // Legacy token management functions
 export const getCurrentAccessToken = () => authService.getCurrentToken();
@@ -35,7 +36,7 @@ export const setCurrentAccessToken = (token: string | null) => authService.setCu
 export const api = {
   auth: authService,
   user: userService,
-  matrix: matrixService,
+  matrix: matrixTokenService,
 } as const;
 
 /**

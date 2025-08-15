@@ -5,6 +5,8 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './TopBar';
 import { IndexPanel } from './IndexPanel';
 import { MatrixDevPanel } from '@/apps/chat/matrix/MatrixDevPanel';
+import { RecentRooms } from '@/components/matrix/RecentRooms';
+import { MatrixChat } from '@/components/matrix/MatrixChat';
 
 import { useBackgroundClass } from '@/os/theme/useBackgroundClass';
 
@@ -41,6 +43,15 @@ export const Desktop: React.FC<DesktopProps> = ({
     }
   };
 
+  const handleRoomSelect = (roomId: string) => {
+    // Open chat window for the selected room
+    onOpenApp?.('chat', { 
+      roomId: roomId,
+      chatName: roomId, // You might want to get the actual room name
+      chatType: 'room'
+    });
+  };
+
   const getChatType = (itemName: string): string => {
     if (itemName.startsWith('#')) return 'channel';
     if (itemName.includes('Discussion') || itemName.includes('Talk') || itemName.includes('Updates')) return 'group';
@@ -62,7 +73,13 @@ export const Desktop: React.FC<DesktopProps> = ({
 
       {/* Desktop content */}
       <ScrollArea className="relative z-10 h-screen ml-80 pt-12">
-        <div className="pl-4">
+        <div className="p-4">
+          {/* Recent Rooms Component */}
+          <div className="mb-6">
+            <RecentRooms onRoomSelect={handleRoomSelect} />
+          </div>
+          
+          {/* Other desktop content */}
           {children}
         </div>
       </ScrollArea>
