@@ -3,7 +3,7 @@ import { useServices } from '@/kernel/providers/ServicesProvider';
 import { useThemeContext } from '@/os/theme/ThemeProvider';
 import { useAuthStore } from '@/kernel/auth/store/authStore';
 import { authService, matrixService } from '@/network';
-import { matrixSessionBinder } from '@/kernel/matrix/MatrixSessionBinder';
+import { matrixSessionBinder } from '@/services/matrix';
 import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
 import { Button } from '@/ui/button';
 import { MessageSquare, ChevronDown, ChevronUp, Info, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
@@ -32,7 +32,7 @@ export function MatrixDevPanel() {
   const syncState = currentSession?.driver.getClient()?.getSyncState() || 'STOPPED';
   const hasMatrixUserId = !!user?.matrixId;
 
-  const [isExpanded, setIsExpanded] = useState(true); // Start expanded for debugging
+  const [isExpanded, setIsExpanded] = useState(false); // Start collapsed
   const [showZosToken, setShowZosToken] = useState(false);
   const [showMatrixToken, setShowMatrixToken] = useState(false);
   const [showRoomInfo, setShowRoomInfo] = useState(false);
@@ -56,6 +56,43 @@ export function MatrixDevPanel() {
   const infoBgClass = isDark
     ? 'bg-blue-900/30 border border-blue-700/50 text-blue-300'
     : 'bg-blue-50 border border-blue-200 text-blue-800';
+
+  // Format timestamp to readable local time
+  const formatLastActivity = (timestamp: number): string => {
+    if (!timestamp || timestamp === 0) return 'No activity';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    // Less than 1 minute
+    if (diffSeconds < 60) {
+      return 'Just now';
+    }
+    // Less than 1 hour
+    if (diffMinutes < 60) {
+      return `${diffMinutes} ${diffMinutes === 1 ? 'minute' : 'minutes'} ago`;
+    }
+    // Less than 24 hours
+    if (diffHours < 24) {
+      return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+    }
+    // Less than 7 days
+    if (diffDays < 7) {
+      return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+    }
+    // More than 7 days - show actual date and time
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   // Get room information from existing session
   const getRoomInfo = () => {
@@ -87,12 +124,30 @@ export function MatrixDevPanel() {
         encrypted: room.hasEncryptionStateEvent?.() || false,
         memberCount: room.getJoinedMemberCount(),
         // @ts-ignore
-        bumpStamp: room.getBumpStamp?.() || 0
+        bumpStamp: room.getBumpStamp?.() ?? room.getLastActiveTimestamp() ?? 0
       }))
     };
   };
 
   const roomInfo = showRoomInfo ? getRoomInfo() : null;
+
+  // If collapsed, show a compact button
+  if (!isExpanded) {
+    return (
+      <div className="fixed bottom-4 right-4 z-50">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsExpanded(true)}
+          className="h-9 px-3 flex items-center gap-2 shadow-lg bg-background"
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span className="text-xs">Matrix</span>
+          <ChevronUp className="w-3 h-3" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className={panelClasses}>
@@ -106,16 +161,15 @@ export function MatrixDevPanel() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => setIsExpanded(false)}
               className="h-6 w-6 p-0"
             >
-              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              <ChevronDown className="w-4 h-4" />
             </Button>
           </div>
         </CardHeader>
         
-        {isExpanded && (
-          <CardContent className="space-y-3 pt-0">
+        <CardContent className="space-y-3 pt-0">
             {/* Session Status */}
             <div className={`p-2 rounded text-xs ${hasSession ? successBgClass : errorBgClass}`}>
               <div className="flex items-center gap-2">
@@ -262,7 +316,7 @@ export function MatrixDevPanel() {
                             {room.encrypted && <span title="Encrypted">🔒</span>}
                           </div>
                           <div className="pl-4 text-muted-foreground">
-                            {room.memberCount} members • Bump: {room.bumpStamp}
+                            {room.memberCount} members • {formatLastActivity(room.bumpStamp)}
                           </div>
                         </div>
                       ))}
@@ -283,7 +337,6 @@ export function MatrixDevPanel() {
               </div>
             </div>
           </CardContent>
-        )}
       </Card>
     </div>
   );

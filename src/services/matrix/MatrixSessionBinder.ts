@@ -52,31 +52,66 @@ export class MatrixSessionBinder {
 
       console.log('[MatrixSessionBinder] Got SSO token, length:', freshMatrixToken.length);
 
+      // Check if we have a stored device ID for this user
+      const deviceStorageKey = `matrix_device_${user.matrixId.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      const storedDeviceId = localStorage.getItem(deviceStorageKey);
+      
+      if (storedDeviceId) {
+        console.log('[MatrixSessionBinder] Found stored device ID:', storedDeviceId);
+      }
+
       // Perform Matrix JWT login to get proper credentials
       const tempClient = sdk.createClient({
         baseUrl: authConfig.matrixHomeserverUrl,
       });
 
       console.log('[MatrixSessionBinder] Performing JWT login...');
-      const loginRequest = await tempClient.login("org.matrix.login.jwt", {
+      
+      // Build login options - include device_id if we have one stored
+      const loginOptions: any = {
         token: freshMatrixToken,
-      });
+      };
+      
+      // If we have a stored device ID, pass it to try to reuse the same device
+      if (storedDeviceId) {
+        loginOptions.device_id = storedDeviceId;
+        console.log('[MatrixSessionBinder] Attempting to reuse device ID:', storedDeviceId);
+      }
+      
+      const loginRequest = await tempClient.login("org.matrix.login.jwt", loginOptions);
 
       console.log('[MatrixSessionBinder] JWT login response:', loginRequest);
       console.log('[MatrixSessionBinder] JWT login successful:', {
         userId: loginRequest.user_id,
         deviceId: loginRequest.device_id,
         hasAccessToken: !!loginRequest.access_token,
-        tokenLength: loginRequest.access_token?.length
+        tokenLength: loginRequest.access_token?.length,
+        requestedDeviceId: storedDeviceId,
+        receivedDeviceId: loginRequest.device_id,
+        deviceReused: storedDeviceId === loginRequest.device_id
       });
+      
+      // Store the device ID for future use if it's the first time
+      if (!storedDeviceId && loginRequest.device_id) {
+        console.log('[MatrixSessionBinder] Storing device ID for future use:', loginRequest.device_id);
+        localStorage.setItem(deviceStorageKey, loginRequest.device_id);
+      } else if (storedDeviceId && loginRequest.device_id !== storedDeviceId) {
+        console.warn('[MatrixSessionBinder] Server returned different device ID than requested!', {
+          requested: storedDeviceId,
+          received: loginRequest.device_id
+        });
+      }
+      
+      // Always use the device ID returned by the server
+      const deviceIdToUse = loginRequest.device_id;
 
-      // Create and initialize driver
+      // Create and initialize driver with the stored device ID
       const driver = new MatrixDriver();
       await driver.initialize({
         homeserverUrl: authConfig.matrixHomeserverUrl,
         accessToken: loginRequest.access_token,
         userId: loginRequest.user_id,
-        deviceId: loginRequest.device_id,
+        deviceId: deviceIdToUse,  // Use the stored device ID to maintain consistency
       });
 
       // Start syncing to get the most recent 20 rooms

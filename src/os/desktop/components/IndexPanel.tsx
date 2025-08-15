@@ -8,8 +8,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/ui/accordion';
-import { Search, ChevronLeft } from 'lucide-react';
+import { Search, ChevronLeft, Loader2 } from 'lucide-react';
 import { SuperButton } from '@/ui/super-button';
+import { useMatrixRoomsForIndex } from '@/hooks/useMatrixRoomsForIndex';
+import type { ChatRoom } from '@/kernel/ports/chat';
 
 interface IndexPanelProps {
   className?: string;
@@ -27,12 +29,14 @@ interface AppContent {
         id: string;
         title: string;
         items: string[];
+        roomIds?: string[]; // Optional room IDs for Matrix chat rooms
       }[];
     }[];
     sections?: {
       id: string;
       title: string;
       items: string[];
+      roomIds?: string[]; // Optional room IDs for Matrix chat rooms
     }[];
   };
 }
@@ -209,6 +213,9 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
   const [activeTab, setActiveTab] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  
+  // Get real Matrix rooms data
+  const matrixRooms = useMatrixRoomsForIndex();
 
   // When selectedApp changes, set default tab and open first section
   useEffect(() => {
@@ -244,15 +251,94 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
       item.toLowerCase().includes(searchQuery.toLowerCase())
     );
   };
+  
+  // Filter rooms based on search query
+  const filterRooms = (rooms: ChatRoom[]) => {
+    if (!searchQuery.trim()) return rooms;
+    return rooms.filter(room => 
+      room.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
 
   // Filter sections based on search query
-  const filterSections = (sections: { id: string; title: string; items: string[] }[]) => {
+  const filterSections = (sections: { id: string; title: string; items: string[]; roomIds?: string[] }[]) => {
     if (!searchQuery.trim()) return sections;
-    return sections.map(section => ({
-      ...section,
-      items: filterItems(section.items)
-    })).filter(section => section.items.length > 0);
+    return sections.map(section => {
+      const filteredItems = filterItems(section.items);
+      const filteredRoomIds = section.roomIds ? 
+        section.roomIds.filter((_, index) => 
+          section.items[index].toLowerCase().includes(searchQuery.toLowerCase())
+        ) : undefined;
+      
+      return {
+        ...section,
+        items: filteredItems,
+        roomIds: filteredRoomIds
+      };
+    }).filter(section => section.items.length > 0);
   };
+  
+  // Get chat content with real Matrix data
+  const getChatContent = () => {
+    if (selectedApp !== 'chat' || !matrixRooms) return content;
+    
+    // Build dynamic content based on Matrix rooms
+    return {
+      title: 'Chat',
+      tabs: [
+        {
+          id: 'frens',
+          label: 'Frens',
+          sections: [
+            {
+              id: 'direct-messages',
+              title: 'Direct Messages',
+              items: filterRooms(matrixRooms.directMessages).map(room => room.name),
+              roomIds: filterRooms(matrixRooms.directMessages).map(room => room.id)
+            },
+            {
+              id: 'recent',
+              title: 'Recent Chats',
+              items: filterRooms(matrixRooms.recentChats).map(room => room.name),
+              roomIds: filterRooms(matrixRooms.recentChats).map(room => room.id)
+            }
+          ]
+        },
+        {
+          id: 'groups',
+          label: 'Groups',
+          sections: [
+            {
+              id: 'active-groups',
+              title: 'Active Groups',
+              items: filterRooms(matrixRooms.groups).map(room => room.name),
+              roomIds: filterRooms(matrixRooms.groups).map(room => room.id)
+            },
+            {
+              id: 'channels',
+              title: 'Channels',
+              items: filterRooms(matrixRooms.channels).map(room => room.name),
+              roomIds: filterRooms(matrixRooms.channels).map(room => room.id)
+            }
+          ]
+        },
+        {
+          id: 'all',
+          label: 'All',
+          sections: [
+            {
+              id: 'all-conversations',
+              title: 'All Conversations',
+              items: filterRooms(matrixRooms.all).map(room => room.name),
+              roomIds: filterRooms(matrixRooms.all).map(room => room.id)
+            }
+          ]
+        }
+      ]
+    };
+  };
+  
+  const displayContent = selectedApp === 'chat' ? getChatContent() : content;
 
   return (
     <div className="fixed left-16 top-10 h-[calc(100vh-2.5rem)] w-64 flex flex-col">
@@ -280,12 +366,23 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
           </div>
           
           <div className="flex-1 overflow-y-auto">
-        {content ? (
-          content.tabs ? (
+        {/* Show loading state for chat app */}
+        {selectedApp === 'chat' && matrixRooms.loading ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : selectedApp === 'chat' && matrixRooms.error ? (
+          <div className="px-4 py-4">
+            <div className="text-xs text-destructive">
+              Failed to load conversations
+            </div>
+          </div>
+        ) : displayContent ? (
+          displayContent.tabs ? (
             // Render tabbed content
             <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
               <TabsList className="flex w-auto mx-4 mt-4 mb-2 h-8 gap-1 justify-start">
-                {content.tabs.map((tab) => (
+                {displayContent.tabs.map((tab) => (
                   <TabsTrigger 
                     key={tab.id} 
                     value={tab.id}
@@ -296,7 +393,7 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                 ))}
               </TabsList>
               
-              {content.tabs.map((tab) => (
+              {displayContent.tabs.map((tab) => (
                 <TabsContent key={tab.id} value={tab.id} className="flex-1 px-4 pt-0">
                   <Accordion 
                     type="multiple" 
@@ -318,7 +415,14 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                               <div 
                                 key={index}
                                 className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
-                                onClick={() => onItemClick?.(selectedApp!, item)}
+                                onClick={() => {
+                                  // For chat app, pass the room ID if available
+                                  if (selectedApp === 'chat' && section.roomIds && section.roomIds[index]) {
+                                    onItemClick?.(selectedApp, section.roomIds[index]);
+                                  } else {
+                                    onItemClick?.(selectedApp!, item);
+                                  }
+                                }}
                               >
                                 {item}
                               </div>
@@ -340,7 +444,7 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                 onValueChange={setOpenSections}
                 className="w-full space-y-2"
               >
-                {filterSections(content.sections || []).map((section) => (
+                {filterSections(displayContent.sections || []).map((section) => (
                   <AccordionItem 
                     key={section.id} 
                     value={section.id}
@@ -354,8 +458,15 @@ export const IndexPanel: React.FC<IndexPanelProps> = ({
                         {section.items.map((item, index) => (
                           <div 
                             key={index}
-                                                            className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
-                            onClick={() => onItemClick?.(selectedApp!, item)}
+                                                                                      className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/30 rounded cursor-pointer transition-colors"
+                          onClick={() => {
+                            // For chat app, pass the room ID if available
+                            if (selectedApp === 'chat' && section.roomIds && section.roomIds[index]) {
+                              onItemClick?.(selectedApp, section.roomIds[index]);
+                            } else {
+                              onItemClick?.(selectedApp!, item);
+                            }
+                          }}
                           >
                             {item}
                           </div>

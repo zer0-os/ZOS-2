@@ -195,7 +195,7 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
       } ${
         isActive ? 'ring-1 ring-[hsl(var(--ring-focus))]' : ''
       } ${
-        isAppWindow && !isMaximized ? 'max-w-4xl' : ''
+        isAppWindow && !isMaximized && !isSnapped ? 'max-w-xl h-[700px]' : ''
       } ${
         !isAppWindow && !isMaximized ? 'max-w-96' : ''
       } ${
@@ -265,7 +265,9 @@ export const Window: React.FC<CombinedWindowProps> = (props) => {
       </CardHeader>
       <CardContent 
         className={`overflow-hidden p-0 bg-card/70 backdrop-blur-sm ${
-          (isMaximized || isSnapped) ? 'rounded-b-none' : 'rounded-b-md'
+          (isMaximized || isSnapped) ? 'rounded-b-none h-[calc(100%-2.5rem)]' : 'rounded-b-md'
+        } ${
+          isAppWindow && !isMaximized && !isSnapped ? 'h-[calc(700px-2.5rem)]' : ''
         }`}
       >
         {children}

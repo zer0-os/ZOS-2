@@ -248,14 +248,32 @@ export class MatrixAdapter implements ChatPort {
       throw new Error('Matrix client not available');
     }
 
+    // Wait for sync to be ready before trying to get messages
+    const syncState = client.getSyncState();
+    console.log(`[MatrixAdapter] Current sync state: ${syncState}`);
+    
+    if (syncState !== 'PREPARED' && syncState !== 'SYNCING') {
+      console.log(`[MatrixAdapter] Sync not ready, but proceeding to show messages quickly`);
+      // Don't wait for sync - show messages immediately even if partial
+      // The room might already have cached messages we can display
+    }
+
     const room = client.getRoom(roomId);
     if (!room) {
+      console.error(`[MatrixAdapter] Room ${roomId} not found`);
+      // List all available rooms for debugging
+      const allRooms = client.getRooms();
+      console.log(`[MatrixAdapter] Available rooms: ${allRooms.map(r => `${r.roomId} (${r.name})`).join(', ')}`);
       throw new Error(`Room ${roomId} not found`);
     }
+
+    console.log(`[MatrixAdapter] Getting messages for room ${roomId} (${room.name})`);
 
     // Get the live timeline
     const timeline = room.getLiveTimeline();
     const events = timeline.getEvents();
+    
+    console.log(`[MatrixAdapter] Initial timeline has ${events.length} events`);
 
     // If we don't have enough events in the timeline, try to paginate backwards
     if (events.length < limit) {
@@ -266,6 +284,7 @@ export class MatrixAdapter implements ChatPort {
           backwards: true,
           limit: limit
         });
+        console.log(`[MatrixAdapter] Pagination completed`);
       } catch (error) {
         console.warn('[MatrixAdapter] Failed to paginate timeline:', error);
       }
@@ -273,12 +292,114 @@ export class MatrixAdapter implements ChatPort {
 
     // Get updated events after pagination
     const allEvents = timeline.getEvents();
+    console.log(`[MatrixAdapter] After pagination: ${allEvents.length} total events`);
+    
+    // Log event types for debugging
+    const eventTypes = allEvents.reduce((acc, event) => {
+      const type = event.getType();
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    console.log(`[MatrixAdapter] Event types:`, eventTypes);
+    
+    // Check if room is encrypted
+    const isEncrypted = room.hasEncryptionStateEvent?.() || false;
+    console.log(`[MatrixAdapter] Room ${roomId} encrypted: ${isEncrypted}`);
+    
+    if (isEncrypted) {
+      // Check if crypto is enabled
+      // @ts-ignore - isCryptoEnabled might not be in type definitions
+      const cryptoEnabled = client.isCryptoEnabled?.() || false;
+      console.log(`[MatrixAdapter] Crypto enabled: ${cryptoEnabled}`);
+      
+      if (!cryptoEnabled) {
+        console.warn('[MatrixAdapter] ⚠️ Room is encrypted but crypto is not enabled!');
+      }
+    }
     
     // Filter for message events and transform them
-    return allEvents
-      .filter(event => event.getType() === 'm.room.message')
-      .slice(-limit)
-      .map(event => this.mapEventToChatMessage(event, room));
+    const messageEvents = allEvents.filter(event => {
+      const type = event.getType();
+      // Include both regular messages and encrypted messages
+      return type === 'm.room.message' || type === 'm.room.encrypted';
+    });
+    console.log(`[MatrixAdapter] Found ${messageEvents.length} message events (including encrypted)`);
+    
+    // Process messages - need to handle decryption properly
+    const processedMessages: ChatMessage[] = [];
+    
+    for (const event of messageEvents.slice(-limit)) {
+      try {
+        // For encrypted events, attempt quick decryption without delays
+        if (event.getType() === 'm.room.encrypted') {
+          // First check if already decrypted
+          let clearContent = event.getClearContent?.();
+          
+          if (!clearContent || !clearContent.msgtype) {
+            console.log(`[MatrixAdapter] Encrypted event ${event.getId()}, attempting quick decrypt...`);
+            
+            // Try a single quick decrypt attempt (no retries, no delays)
+            try {
+              // @ts-ignore - decryptEventIfNeeded might not be in type definitions
+              if (client.decryptEventIfNeeded) {
+                // @ts-ignore
+                await client.decryptEventIfNeeded(event);
+                clearContent = event.getClearContent?.();
+              }
+            } catch (decryptError) {
+              console.warn(`[MatrixAdapter] Quick decrypt failed for ${event.getId()}:`, decryptError);
+            }
+            
+            // If still not decrypted, immediately show as failed (no waiting)
+            if (!clearContent || !clearContent.msgtype) {
+              console.log(`[MatrixAdapter] Event ${event.getId()} not decrypted, showing placeholder`);
+              
+              // Fire off a key request in background (don't wait for it)
+              // @ts-ignore
+              if (client.crypto?.requestRoomKey) {
+                try {
+                  const wireContent = event.getWireContent();
+                  // @ts-ignore - Request key but don't wait
+                  client.crypto.requestRoomKey({
+                    algorithm: wireContent.algorithm,
+                    room_id: event.getRoomId(),
+                    session_id: wireContent.session_id,
+                    sender_key: wireContent.sender_key,
+                  }, [event.getSender()], true).catch((err: any) => {
+                    console.warn(`[MatrixAdapter] Background key request failed:`, err);
+                  });
+                } catch (err) {
+                  // Ignore errors in background key request
+                }
+              }
+              
+              // Immediately add the failed decrypt message
+              processedMessages.push({
+                id: event.getId() || `unknown-${Date.now()}`,
+                roomId: room.roomId,
+                sender: event.getSender() || 'unknown',
+                content: '🔒 Failed to decrypt message',
+                timestamp: event.getTs(),
+                type: 'text'
+              });
+              continue;
+            } else {
+              console.log(`[MatrixAdapter] Successfully decrypted event ${event.getId()}`);
+            }
+          }
+        }
+        
+        const message = this.mapEventToChatMessage(event, room);
+        if (message) {
+          processedMessages.push(message);
+        }
+      } catch (e) {
+        console.error(`[MatrixAdapter] Failed to process event ${event.getId()}:`, e);
+      }
+    }
+    
+    console.log(`[MatrixAdapter] Returning ${processedMessages.length} messages after processing`);
+    return processedMessages;
   }
 
   async loadMoreMessages(roomId: string, _fromToken?: string, limit: number = 50): Promise<ChatMessage[]> {
@@ -336,6 +457,11 @@ export class MatrixAdapter implements ChatPort {
       timestamp: Date.now(),
       type: 'text'
     };
+  }
+
+  async focusRoom(roomId: string, messageLimit: number = 50): Promise<void> {
+    // Call the driver's focusRoom method to ensure messages are loaded
+    await this.driver.focusRoom(roomId, messageLimit);
   }
 
   // User operations
@@ -485,13 +611,33 @@ export class MatrixAdapter implements ChatPort {
   }
 
   private mapEventToChatMessage(event: MatrixEvent, room: Room): ChatMessage {
-    const content = event.getContent();
+    let content = event.getContent();
+    
+    // For encrypted events, try to get the decrypted content
+    if (event.getType() === 'm.room.encrypted') {
+      const clearContent = event.getClearContent?.();
+      if (clearContent) {
+        content = clearContent;
+        console.log(`[MatrixAdapter] Using decrypted content for event ${event.getId()}`);
+      } else {
+        console.warn(`[MatrixAdapter] Could not decrypt event ${event.getId()}`);
+        // Return a placeholder for undecrypted messages - still show them
+        return {
+          id: event.getId() || `unknown-${Date.now()}`,
+          roomId: room.roomId,
+          sender: event.getSender() || 'unknown',
+          content: '🔒 Failed to decrypt message',
+          timestamp: event.getTs(),
+          type: 'text'
+        };
+      }
+    }
     
     return {
       id: event.getId() || `unknown-${Date.now()}`,
       roomId: room.roomId,
       sender: event.getSender() || 'unknown',
-      content: content.body || '[No content]',
+      content: content.body || content.text || '[No content]',
       timestamp: event.getTs(),
       type: this.determineMessageType(content)
     };

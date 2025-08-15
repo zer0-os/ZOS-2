@@ -6,9 +6,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthStore } from '@/kernel/auth/store/authStore';
 import { authService } from '@/network';
-import { matrixSessionBinder } from '@/kernel/matrix/MatrixSessionBinder';
+import { matrixSessionBinder, type MatrixSession } from '@/services/matrix';
 import type { ChatPort } from '@/kernel/ports/chat';
-import type { MatrixSession } from '@/kernel/matrix/MatrixSessionBinder';
 
 interface ServicesContextType {
   chat: ChatPort | null;

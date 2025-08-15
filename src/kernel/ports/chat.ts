@@ -42,6 +42,7 @@ export interface ChatPort {
   getMessages(roomId: string, limit?: number): Promise<ChatMessage[]>;
   loadMoreMessages?(roomId: string, fromToken?: string, limit?: number): Promise<ChatMessage[]>;
   sendMessage(roomId: string, content: string): Promise<ChatMessage>;
+  focusRoom?(roomId: string, messageLimit?: number): Promise<void>;
   
   // User operations
   getCurrentUser(): Promise<ChatUser | null>;
