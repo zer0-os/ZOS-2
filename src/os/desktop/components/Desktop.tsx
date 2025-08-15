@@ -5,7 +5,6 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './TopBar';
 import { IndexPanel } from './IndexPanel';
 import { MatrixDevPanel } from '@/apps/chat/matrix/MatrixDevPanel';
-import { MatrixChat } from '@/components/matrix/MatrixChat';
 
 import { useBackgroundClass } from '@/os/theme/useBackgroundClass';
 
