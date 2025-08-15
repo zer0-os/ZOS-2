@@ -6,7 +6,7 @@ import { authService, matrixService } from '@/network';
 import { matrixSessionBinder } from '@/services/matrix';
 import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
 import { Button } from '@/ui/button';
-import { MessageSquare, ChevronDown, ChevronUp, Info, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { MessageSquare, ChevronDown, ChevronUp, Info, CheckCircle, XCircle } from 'lucide-react';
 
 /**
  * Floating Matrix development panel for displaying session information
@@ -35,18 +35,13 @@ export function MatrixDevPanel() {
   const [isExpanded, setIsExpanded] = useState(false); // Start collapsed
   const [showZosToken, setShowZosToken] = useState(false);
   const [showMatrixToken, setShowMatrixToken] = useState(false);
+  const [showMatrixId, setShowMatrixId] = useState(false);
+  const [showDeviceId, setShowDeviceId] = useState(false);
   const [showRoomInfo, setShowRoomInfo] = useState(false);
 
   // Theme-aware classes
   const isDark = theme === 'midnight' || theme === 'blackout';
-  const panelClasses = `fixed bottom-4 right-4 z-50 w-80 ${
-    isDark ? 'shadow-2xl' : 'shadow-lg'
-  }`;
   const debugBgClass = isDark ? 'bg-muted/50' : 'bg-gray-50';
-
-  const warningBgClass = isDark 
-    ? 'text-yellow-300 bg-yellow-900/20 border border-yellow-800/30' 
-    : 'text-yellow-700 bg-yellow-50 border border-yellow-200';
   const successBgClass = isDark 
     ? 'bg-green-900/30 border border-green-700/50 text-green-300'
     : 'bg-green-50 border border-green-200 text-green-800';
@@ -129,30 +124,30 @@ export function MatrixDevPanel() {
     };
   };
 
-  const roomInfo = showRoomInfo ? getRoomInfo() : null;
-
-  // If collapsed, show a compact button
-  if (!isExpanded) {
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsExpanded(true)}
-          className="h-9 px-3 flex items-center gap-2 shadow-lg bg-background"
-        >
-          <MessageSquare className="w-4 h-4" />
-          <span className="text-xs">Matrix</span>
-          <ChevronUp className="w-3 h-3" />
-        </Button>
-      </div>
-    );
-  }
+  // Always get room info when session exists, but control visibility with showRoomInfo
+  const roomInfo = hasSession ? getRoomInfo() : null;
 
   return (
-    <div className={panelClasses}>
-      <Card>
-        <CardHeader className="pb-3">
+    <div className="fixed bottom-4 right-4 z-50">
+      <div className={`transition-all duration-300 ease-in-out ${
+        isExpanded ? 'w-80' : 'w-auto'
+      }`}>
+        {!isExpanded ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsExpanded(true)}
+            className="h-9 px-3 flex items-center gap-2 shadow-lg bg-background transition-all duration-300 hover:scale-105"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span className="text-xs">Matrix</span>
+            <ChevronUp className="w-3 h-3" />
+          </Button>
+        ) : (
+          <Card className={`animate-in slide-in-from-bottom-2 fade-in duration-300 transition-all ${
+            isDark ? 'shadow-2xl' : 'shadow-lg'
+          }`}>
+        <CardHeader className="pb-3 transition-all duration-200">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
@@ -162,14 +157,14 @@ export function MatrixDevPanel() {
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(false)}
-              className="h-6 w-6 p-0"
+              className="h-6 w-6 p-0 transition-transform duration-200 hover:scale-110"
             >
               <ChevronDown className="w-4 h-4" />
             </Button>
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-3 pt-0">
+        <CardContent className="space-y-3 pt-0 transition-all duration-300 ease-in-out">
             {/* Session Status */}
             <div className={`p-2 rounded text-xs ${hasSession ? successBgClass : errorBgClass}`}>
               <div className="flex items-center gap-2">
@@ -193,9 +188,40 @@ export function MatrixDevPanel() {
                   {syncState}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Device ID:</span>
-                <span className="font-mono text-[10px]">{deviceId ? `${deviceId.slice(0, 12)}...` : 'None'}</span>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Device ID:</span>
+                  <div className="flex items-center gap-1">
+                    {deviceId ? (
+                      <>
+                        <span className="font-mono text-[10px] truncate max-w-[100px]">
+                          {deviceId.length > 20 ? `${deviceId.substring(0, 20)}...` : deviceId}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowDeviceId(!showDeviceId)}
+                          className="h-4 px-1 text-[10px]"
+                        >
+                          {showDeviceId ? 'Hide' : 'Show'}
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-xs">None</span>
+                    )}
+                  </div>
+                </div>
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  showDeviceId ? 'max-h-20 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                }`}>
+                  {deviceId && (
+                    <div className={`font-mono text-[10px] break-all bg-background/50 p-1 rounded transform transition-all duration-300 ease-in-out ${
+                      showDeviceId ? 'translate-y-0 scale-100' : '-translate-y-1 scale-95'
+                    }`}>
+                      {deviceId}
+                    </div>
+                  )}
+                </div>
               </div>
               {clientError && (
                 <div className="text-red-600 dark:text-red-400 text-[10px] mt-1">
@@ -207,11 +233,40 @@ export function MatrixDevPanel() {
             {/* User Info */}
             <div className={`${debugBgClass} p-2 rounded space-y-1 text-xs`}>
               <div className="font-medium mb-1">User Info</div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Matrix ID:</span>
-                <span className="font-mono text-[10px] truncate max-w-[150px]">
-                  {user?.matrixId || 'Not set'}
-                </span>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Matrix ID:</span>
+                  <div className="flex items-center gap-1">
+                    {user?.matrixId ? (
+                      <>
+                        <span className="font-mono text-[10px] truncate max-w-[100px]">
+                          {user.matrixId.length > 20 ? `${user.matrixId.substring(0, 20)}...` : user.matrixId}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowMatrixId(!showMatrixId)}
+                          className="h-4 px-1 text-[10px]"
+                        >
+                          {showMatrixId ? 'Hide' : 'Show'}
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-xs">Not set</span>
+                    )}
+                  </div>
+                </div>
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  showMatrixId ? 'max-h-20 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                }`}>
+                  {user?.matrixId && (
+                    <div className={`font-mono text-[10px] break-all bg-background/50 p-1 rounded transform transition-all duration-300 ease-in-out ${
+                      showMatrixId ? 'translate-y-0 scale-100' : '-translate-y-1 scale-95'
+                    }`}>
+                      {user.matrixId}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Has Matrix User:</span>
@@ -244,11 +299,17 @@ export function MatrixDevPanel() {
                     )}
                   </div>
                 </div>
-                {showZosToken && zeroAccessToken && (
-                  <div className="font-mono text-[10px] break-all bg-background/50 p-1 rounded">
-                    {zeroAccessToken.substring(0, 50)}...
-                  </div>
-                )}
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  showZosToken ? 'max-h-32 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                }`}>
+                  {zeroAccessToken && (
+                    <div className={`font-mono text-[10px] break-all bg-background/50 p-1 rounded transform transition-all duration-300 ease-in-out ${
+                      showZosToken ? 'translate-y-0 scale-100' : '-translate-y-1 scale-95'
+                    }`}>
+                      {zeroAccessToken}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1">
@@ -270,11 +331,17 @@ export function MatrixDevPanel() {
                     )}
                   </div>
                 </div>
-                {showMatrixToken && matrixTokenFromService && (
-                  <div className="font-mono text-[10px] break-all bg-background/50 p-1 rounded">
-                    {matrixTokenFromService.substring(0, 50)}...
-                  </div>
-                )}
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  showMatrixToken ? 'max-h-32 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                }`}>
+                  {matrixTokenFromService && (
+                    <div className={`font-mono text-[10px] break-all bg-background/50 p-1 rounded transform transition-all duration-300 ease-in-out ${
+                      showMatrixToken ? 'translate-y-0 scale-100' : '-translate-y-1 scale-95'
+                    }`}>
+                      {matrixTokenFromService}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -284,7 +351,7 @@ export function MatrixDevPanel() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowRoomInfo(!showRoomInfo)}
-                className="w-full text-xs"
+                className="w-full text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Info className="w-3 h-3 mr-1" />
                 {showRoomInfo ? 'Hide' : 'Show'} Room Info
@@ -292,8 +359,13 @@ export function MatrixDevPanel() {
             )}
 
             {/* Room Information */}
-            {showRoomInfo && roomInfo && (
-              <div className={`${infoBgClass} p-2 rounded space-y-2 text-xs`}>
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              showRoomInfo ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              {roomInfo && (
+                <div className={`${infoBgClass} p-2 rounded space-y-2 text-xs transform transition-all duration-300 ease-in-out ${
+                  showRoomInfo ? 'translate-y-0 scale-100' : '-translate-y-2 scale-95'
+                }`}>
                 <div className="font-medium">Room Statistics</div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Rooms:</span>
@@ -323,21 +395,13 @@ export function MatrixDevPanel() {
                     </div>
                   </>
                 )}
-              </div>
-            )}
-
-            {/* Warning about dev panel */}
-            <div className={`${warningBgClass} p-2 rounded text-[10px]`}>
-              <div className="flex items-start gap-1">
-                <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                <span>
-                  This panel displays current Matrix session information. 
-                  No client management or syncing is performed here.
-                </span>
-              </div>
+                </div>
+              )}
             </div>
           </CardContent>
-      </Card>
+        </Card>
+        )}
+      </div>
     </div>
   );
 }
